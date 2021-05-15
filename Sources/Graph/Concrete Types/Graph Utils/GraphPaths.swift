@@ -61,7 +61,7 @@ public final class GraphPaths< G: Graph> {
         return data.edgeTo
     }()
     
-    private var _memoizedPaths = NSCache<NSNumber, NSArray>()
+    private let _memoizedPaths = NSCache<NSNumber, NSArray>()
     
     /// Returns a new `GraphPaths` instance initialized to the given graph, the given source vertex and the given
     /// graph traversal values.
@@ -114,11 +114,9 @@ public final class GraphPaths< G: Graph> {
     public func pathFromSource(to destination: Int) -> [Int] {
         guard hasPath(to: destination) else { return [] }
         
-        let key = NSNumber(value: destination)
-        if let cached = _memoizedPaths.object(forKey: key) {
-            let path = cached.map({ ($0 as! NSNumber).intValue })
+        if let cached = _memoizedPaths.object(forKey: destination as NSNumber) {
             
-            return path
+            return cached as! Array<Int>
         }
         
         var path: Array<Int> = []
@@ -130,8 +128,7 @@ public final class GraphPaths< G: Graph> {
         path.append(current)
         path.reverse()
         defer {
-            let cached = path.map({ NSNumber(value: $0) })
-            _memoizedPaths.setObject(cached as NSArray, forKey: key)
+            _memoizedPaths.setObject(path as NSArray, forKey: destination as NSNumber)
         }
         
         return path

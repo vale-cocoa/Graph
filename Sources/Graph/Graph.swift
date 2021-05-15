@@ -63,6 +63,11 @@ public protocol Graph: Hashable {
     /// - Complexity: O(1).
     var edgeCount: Int { get }
     
+    /// Create a new graph of the specified kind from the given edges.
+    ///
+    /// - Parameter kind: A `GraphConnections` value.
+    /// - Parameter edges: An array containing the edges of the new graph.
+    /// - Returns: A graph of the specified kind, containing the given edges.
     init(kind: GraphConnections, edges: [Edge])
     
     /// Returns all vertices in this graph adjacent to the given one, as an array of edges.

@@ -103,7 +103,7 @@ public final class GraphDegrees<G: Graph> {
         allEdges.filter({ $0.isSelfLoop }).count
     }()
     
-    private var _memoizedIndegrees = NSCache<NSNumber, NSNumber>()
+    private let _memoizedIndegrees = NSCache<NSNumber, NSNumber>()
     
     /// Returns a new instance of `GrapDegree` initalized with the given graph.
     ///
@@ -139,8 +139,9 @@ public final class GraphDegrees<G: Graph> {
     func indegree(of vertex: Int) -> Int {
         precondition(0..<graph.vertexCount ~= vertex, "Vertex: \(vertex) is not in graph.")
         
-        let key = vertex as NSNumber
-        guard let result = _memoizedIndegrees.object(forKey: key) else {
+        guard
+            let result = _memoizedIndegrees.object(forKey: vertex as NSNumber)
+        else {
             let result = (0..<graph.vertexCount)
                 .reduce(0, { result, source in
                     result + graph.adjacencies(vertex: source)
@@ -149,13 +150,13 @@ public final class GraphDegrees<G: Graph> {
                         }).count
                 })
             defer {
-                _memoizedIndegrees.setObject(result as NSNumber, forKey: key)
+                _memoizedIndegrees.setObject(result as NSNumber, forKey: vertex as NSNumber)
             }
             
             return result
         }
         
-        return result.intValue
+        return result as! Int
     }
     
 }

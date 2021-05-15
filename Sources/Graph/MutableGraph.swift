@@ -25,6 +25,20 @@
 //  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 public protocol MutableGraph: Graph {
+    /// Create a new mutable graph of the specified kind, with the specified count of vertices and
+    /// fully disconnected.
+    ///
+    /// - Parameter kind:   A `GraphConnections` value specifying the type of connection
+    ///                     between vertices the new mutable graph instance will hold.
+    /// - Parameter vertexCount:    An `Int` value specifying the number of vertices the new
+    ///                             mutable graph instance will contain.
+    ///                             **Must not be negative**.
+    /// - Returns:  A new mutable graph, initialized to contain the specified number of vertices,
+    ///             adopting the specified type of connection between its vertices, without any
+    ///             edge present. That is the returned graph will have its `edgeCount` set to `0`,
+    ///             and every vertex in it will have no adjacency set.
+    init(kind: GraphConnections, vertexCount: Int)
+    
     /// Adds the given edge to this graph, by creating an adjacency between the two vertices
     /// of the edge accordingly to the graph's property `kind` value.
     ///

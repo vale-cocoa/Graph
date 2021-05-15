@@ -166,7 +166,7 @@ extension Graph {
     ///
     ///
     /// - Parameter preOrderVertexVisit:    A closure executed **before** the traversal proceeds on
-    ///                                     checking the adjacencies of the currently visited vertex..
+    ///                                     checking the adjacencies of the currently visited vertex.
     /// - Parameter visitingVertex: An `Int` value representing the vertex currently being visited
     ///                             by the traversal.
     /// - Parameter visitingVertexAdjacency:    A closure being executed when an adjacency
@@ -189,6 +189,45 @@ extension Graph {
         var visited: Set<Int> = []
         for vertex in 0..<vertexCount where !visited.contains(vertex) {
             try recursiveDFS(reachableFrom: vertex, visited: &visited, preOrderVertexVisit: preOrderVertexVisit, visitingVertexAdjacency: visitingVertexAdjacency, postOrderVertexVisit: postOrderVertexVisit)
+        }
+    }
+    
+    /// Traverses every vertex of the graph, reaching also disconnected ones, adopting
+    /// the *Breadth First Search* approach, executing the given closures.
+    ///
+    ///
+    /// - Parameter preOrderVertexVisit:    A closure executed **before** the traversal proceeds on
+    ///                                     checking the adjacencies of the currently visited vertex.
+    /// - Parameter visitingVertex: An `Int` value representing the vertex currently being visited
+    ///                             by the traversal.
+    /// - Parameter visitingVertexAdjacency:    A closure being executed when an adjacency
+    ///                                         is found for the vertex being currently visited.
+    /// - Parameter visitingVertex: An `Int` value representing the vertex currently being visited
+    ///                             by the traversal.
+    /// - Parameter adjacency:  An `Edge` representing an adjacency found for the currently visited vertex.
+    /// - Parameter hasBeenVisited: A `Bool` value, `true` when the adjacencent vertex in the edge
+    ///                             has been already visited, otherwise `false` when it has been just
+    ///                             discovered.
+    /// - Parameter postOrderVertexVisit:   A closure executed **after** the traversal had checked
+    ///                                     the adjacencies of the visited vertex.
+    /// - Parameter visitingVertex: An `Int` value representing the vertex currently being visited
+    ///                             by the traversal.
+    public func breadthFirstSearch(preOrderVertexVisit: (_ visitingVertex: Int) throws -> Void, visitingVertexAdjacency: (_ visitingVertex: Int, _ adjacency: Edge, _ hasBeenVisited: Bool) throws -> Void, postOrderVertexVisit: (_ visitingVertex: Int) throws -> Void) rethrows {
+        guard vertexCount > 0 else { return }
+        
+        var visited = Set<Int>()
+        for vertex in 0..<vertexCount where visited.insert(vertex).inserted {
+            var queue: Deque<Int> = [vertex]
+            while let source = queue.dequeue() {
+                try preOrderVertexVisit(source)
+                for edge in adjacencies(vertex: source) {
+                    let other = edge.other(source)
+                    let hasBeenVisited = !visited.insert(other).inserted
+                    try visitingVertexAdjacency(source, edge, hasBeenVisited)
+                    if !hasBeenVisited { queue.enqueue(other) }
+                }
+                try postOrderVertexVisit(source)
+            }
         }
     }
     

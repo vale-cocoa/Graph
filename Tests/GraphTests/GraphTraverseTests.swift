@@ -671,6 +671,11 @@ final class GraphTraverseTests: GraphBaseTests {
         }
     }
     
+    // MARK: - breadthFirstSearch(preOrderVertexVisit:visitingVertexAdjacency:postOrderVertexVisit:) tests
+    func testBreadthFirstSearch_() {
+        XCTFail("Must implement these tests!")
+    }
+    
     // MARK: - Internal traverse helpers tests
     // These methods are just tested for checking that the traversal
     // of graph is done correctly. Other things are tested on public
