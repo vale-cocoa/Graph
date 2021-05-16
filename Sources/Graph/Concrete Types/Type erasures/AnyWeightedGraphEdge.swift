@@ -24,6 +24,10 @@
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 //  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+/// A type-erased weighted graph edge wrapping any weighted graph edge.
+///
+/// An `AnyWeightedGraphEdge` instance forwards its operations to a base weighted edge
+/// having the same `Weight` type, hiding the specifics of the underalying weighted edge.
 public struct AnyWeightedGraphEdge<Weight: AdditiveArithmetic & Comparable & Hashable>: WeightedGraphEdge {
     fileprivate let _box: _Base<Weight>
     
@@ -31,15 +35,40 @@ public struct AnyWeightedGraphEdge<Weight: AdditiveArithmetic & Comparable & Has
         self._box = box
     }
     
+    /// Creates a new `AnyWeightedGraphEdge` instance by wrapping the given weighted edge.
+    ///
+    /// - Parameter concrete: Some `WeightedGraphEdge` instance to wrap.
+    /// - Returns:  A new `AnyWeightedGraphEdge` wrapping the given concrete weighted edge instance
+    ///             and with its same `Weight` type.
     public init<Concrete: WeightedGraphEdge>(_ concrete: Concrete) where Concrete.Weight == Weight {
         self._box = _Box(concrete)
     }
     
+    /// Creates a new `AnyWeightedGraphEdge` instance connecting the two given vertices and having
+    /// the specified `weight` value.
+    ///
+    /// - Parameter vertices:   A tuple of two non negative `Int` values representing the two
+    ///                         vertices the created weighted edge connects.
+    /// - Parameter weight: A `Weight` value.
+    /// - Returns: A new `AnyWeightedGraphEdge` representing a weighted edge connecting
+    ///            the two given vertices with the specified `weight` value.
     public init(vertices: (Int, Int), weight: Weight) {
         let edge = WeightedEdge(vertices: vertices, weight: weight)
         self._box = _Box(edge)
     }
     
+    /// Creates a new `AnyWeightedGraphEdge` instance which will have specifically as its `tail` and `head`
+    /// vertices values those specified as the parameters `tail` and `head`, and the specified `weight` value.
+    ///
+    /// - Parameter tail:   A non negative `Int` value representing the tail vertex
+    ///                     of the newly created weighted edge.
+    /// - Parameter head:   A non negative `Int` value representing the head vertex
+    ///                     of the newly created weighted edge.
+    /// - Parameter weight: A `Weight` value.
+    /// - Returns:  A new `AnyWeightedGraphEdge` instance,
+    ///             which will have specifically as its `tail` and `head` vertices values
+    ///             those specified as the parameters `tail` and `head`, and as `weight`
+    ///             value the one specified as `weight` parameter.
     public init(tail: Int, head: Int, weight: Weight) {
         let edge = WeightedEdge(tail: tail, head: head, weight: weight)
         self._box = _Box(edge)

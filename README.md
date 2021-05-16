@@ -3,7 +3,7 @@
 A Swift package including graph definitions and implementation, adopting positive `Int` values as vertices, in a range starting from `0` up to the count of vertices a graph instance must hold.
 
 ## `Graph` Protocol
-This protocol abstracts basic properties and functionalities for a concrete graph type.
+This protocol abstracts basic properties and functionalities for a concrete graph type with value semantics.
 `Graph` protocol is generic over an associated `Edge` type, which in turns should conform to `GraphEdge` protocol. 
 
 ### `Graph` types differentation rationale
@@ -41,9 +41,6 @@ When a graph instance has its `kind` value equal to `.directed`, then this metho
 ### `Graph` equality and hashing
 `Graph` protocol has its default implementation for equality comparison of two instances taking into account the order of edges in the arrays returned by the `adjacencies(vertex:)` method on every vertex; this very same beahvior is reflected by the default `Hashable` implementation.
 
-## `GraphConnections`
-A swift enum used to differentiate connections in a graph between *directed* and *undirected*.
-
 ## Traversing a `Graph`
 `Graph` protocol defines some methods with default implementations for traversing a graph.
 These methods have a *Functional Programming* approach, and take one or more non escaping closures that will be executed during the traversal of the graph, passing as parameters to them vertcies and/or edges encountered during such traversing.
@@ -76,11 +73,14 @@ Note that both these methods will enumerate every edge in the graph, regardless 
 
 Moreover both methods will visit every vertex in the graph starting from `0`, proceding following adjacencies with the traversal strategy until possible, then repeat on next vertex not yet visited and so on until every vertex in the graph has been visited.
 
+## `GraphConnections`
+A swift enum used to differentiate connections in a graph between *directed* and *undirected*.
+
 ## `GraphTraversal`
 A swift enum used to define graph adjacencies traversal methodologies, either *Depth First Search* or *Breadth First Search*.
 
 ## `MutableGraph` Protocol
-This protocol inherits from `Graph` protocol and abstracts functionalities for conforming types to add and remove edges as well as to reverse in place the graph.
+This protocol inherits from `Graph` protocol and abstracts functionalities for conforming types to add and remove edges as well as to reverse in place the graph, adopting value semantics.
 
 ### Initializing a mutable graph
 A mutable graph can be created either by using the `Graph` protocol initializer `init(kind:edges)` or by adopting the `init(kind:vertexCount:)`.
@@ -107,11 +107,12 @@ Types conforming to `MutableGraph` protocol must also implement the `reverse()` 
 ```Swift
 // Supposing graph is a mutable graph, then:
 let revGraph = graph.reversed()
+
 graph.reverse()
-// graph == revGraph must be true.
+// graph == revGraph MUST BE TRUE
 ```
 ## `GraphEdge` Protocol
-This protocol abstracts basic properties and functionalities of a graph edge.
+This protocol abstracts basic properties and functionalities of a graph edge with value semantics.
 A type conforming to `GraphEdge` must implement the `either` value getter, which must return a non negative `Int` value representing one of the graph vertices it connects.
 To get the other connected vertex of an edge, the method `other(_:)` must be implemented.
 Such method must be implemented according to the following rules, supposing `v` and `w` are the two vertices connected by the edge and `either == v`:
@@ -147,15 +148,18 @@ let areUndirectedEqual = e <~> d
 
 // More in general:
 let f = e.reversed()
+
 e <~> f
-// RETURNS TRUE.
+// RETURNS TRUE
+
 
 // Moreover supposing e == g then:
+
 e <~> g
 // RETURNS TRUE
 ```
 ## `WeightedGraphEdge` Protocol
-This protocol inherits from `GraphEdge` protocol, adding abstractions defining properties and functionality for *weighted* edges. 
+This protocol inherits from `GraphEdge` protocol, adding abstractions defining properties and functionality for *weighted* edges adopting value semantics. 
 That is `WeightedGraphEdge` protocol associates to a generic `Weight` type which must conforms to `AdditiveArithmetic`, `Comparable` and `Hashable` protocols.
 `Weight` associated type is used to represent the *weight* of an edge in a graph adopting as its `Edge` associated type some `WeightedGraphEdge` concrete type.
 In this way `Graph` conforming types can be decoupled from specific implementations for weighted graphs.
@@ -178,18 +182,51 @@ This operator will return `true` when the two compared weighted edges are *undir
 
 ```Swift
 let revE = e.reversed()
+
 e <=~=> revE
 // RETURNS TRUE
 
 // Assuming e.weight == x and y!= x, then:
 let revEW = e.reversedWith(weight: y)
+
 e <~> revEW
 // RETURNS TRUE
+
 e <=~=> revEW
 // RETURNS FALSE
 ```
-## Type erasures
+## Type erasure
+Type-erased wrappers for `Graph`, `GraphEdge` and `WeightedGraph` protocols are included in this package.
+
+### `AnyGraph` type-erased wrapper
+An `AnyGraph` instance forwards its operations to a base graph having the same `Edge` type, hiding the specifics of the underlaying graph.
+
+You can create an instance of `AnyGraph` using one of the two initializers it provides:
+the `Graph` protocol initializer `init(kind:edges:)`, or by using the `init(_:)` initializer which takes a concrete graph instance to wrap.
+
+### `AnyGraphEdge` type-erased wrapper 
+An `AnyGraphEdge` instance forwards its operations to a base edge, hiding the specifics of the underalying edge.
+
+You can create an instance of `AnyGraphEdge` by adopting one of the following initializers:
+* `init(_:)` which takes a concrete edge instance to wrap.
+* `init(vertices:)` which takes a tuple containing the two vertices the edge connects, as if the  created edge would be an undirected connection in a graph.
+* `init(tail:head:)` which takes the two connected vertices in order as its parameters `tail` and `head`, as if the created edge would be a directed connection in a graph. 
+
+### `AnyWeightedGraphEdge` type-erased wrapper
+An `AnyWeightedGraphEdge` instance forwards its operations to a base weighted edge having the same `Weight` type, hiding the specifics of the underlaying weighted edge.
+
+You can create an instance of `AnyWeightedGraphEdge` by adopting one of the following initializers:
+* `init(_:)` which takes a concrete weighted edge instance to wrap.
+* `init(vertices:weight:)` which takes as its parameters a tuple containing the two vertices the edge connects and the weight of the edge, as if the created edge would be an undirected connection in a graph.
+* `init(tail:head:weight:)` which takes the two connected vertices in order as its parameters `tail` and `head` plus the weight of the edge, as if the created edge would be a directed connection in a graph.
 
 ## Concrete types
+Concrete types conforming to `MutableGraph`, `GraphEdge` and `WeightedGraphEdge` are also included in this package.
+
+### `AdjacencyList` mutable graph value type
+
+### `UnweightedEdge` graph edge value type
+
+### `WeightedEdge` weighted graph edge value type
 
 ## Graph Utilities

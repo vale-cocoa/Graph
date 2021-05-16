@@ -24,18 +24,37 @@
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 //  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+/// A type-erased graph edge wrapping any graph edge.
+///
+/// An `AnyGraphEdge` instance forwards its operations to a base edge, hiding the specifics of the underalying edge.
 public struct AnyGraphEdge: GraphEdge {
     fileprivate let _box: _Base
     
+    /// Creates a new `AnyGraphEdge` instance by wrapping the given edge.
+    ///
+    /// - Parameter concrete: Some `GraphEdge` instance to wrap.
+    /// - Returns: A new `AnyGraphEdge` wrapping the given concrete edge instance.
     public init<Concrete: GraphEdge>(_ concrete: Concrete) {
         self._box = _Box(concrete)
     }
     
+    /// Creates a new `AnyGraphEdge` instance connecting the two given vertices.
+    ///
+    /// - Parameter vertices:   A tuple of two non negative `Int` values representing the two
+    ///                         vertices the created edge connects.
+    /// - Returns: A new `AnyGraphEdge` representing an edge connecting the two given vertices.
     public init(vertices: (Int, Int)) {
         let edge = UnweightedEdge(vertices: vertices)
         self._box = _Box(edge)
     }
     
+    /// Creates a new `AnyGraphEdge` instance which will have specifically as its `tail` and `head`
+    /// vertices values those specified as the parameters `tail` and `head`.
+    ///
+    /// - Parameter tail: A non negative `Int` value representing the tail vertex of the newly created edge.
+    /// - Parameter head: A non negative `Int` value representing the head vertex of the newly created edge.
+    /// - Returns:  A new `AnyGraphEdge` instance, which will have specifically as its `tail` and `head`
+    ///             vertices values those specified as the parameters `tail` and `head`.
     public init(tail: Int, head: Int) {
         let edge = UnweightedEdge(tail: tail, head: head)
         self._box = _Box(edge)
