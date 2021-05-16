@@ -24,6 +24,7 @@
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 //  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+/// A mutable graph, generic over the `Edge` type and adopting as storage for its edges an adjacency list.
 public struct AdjacencyList<Edge: GraphEdge> {
     public let kind: GraphConnections
     

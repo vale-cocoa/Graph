@@ -224,9 +224,12 @@ You can create an instance of `AnyWeightedGraphEdge` by adopting one of the foll
 Concrete types conforming to `MutableGraph`, `GraphEdge` and `WeightedGraphEdge` are also included in this package.
 
 ### `AdjacencyList` mutable graph value type
+A mutable graph, generic over the `Edge` type and adopting as storage for its edges an adjacency list.
 
 ### `UnweightedEdge` graph edge value type
+An unweighted edge of a graph.
 
 ### `WeightedEdge` weighted graph edge value type
+A weighted edge of a graph, generic over the `Weight` value.
 
 ## Graph Utilities

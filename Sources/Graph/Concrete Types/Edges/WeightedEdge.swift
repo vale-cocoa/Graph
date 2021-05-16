@@ -24,22 +24,55 @@
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 //  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+/// A weighted edge of a graph, generic over the `Weight` type.
 public struct WeightedEdge<Weight: AdditiveArithmetic & Comparable & Hashable>: WeightedGraphEdge {
-    let v: Int
+    var v: Int
     
-    let w: Int
+    var w: Int
     
-    public let weight: Weight
+    public var weight: Weight
     
-    public var either: Int { v }
+    public var either: Int {
+        get { v }
+        set {
+            precondition(newValue >= 0, "New vertex value must not be negative.")
+            
+            v = newValue
+        }
+    }
     
+    /// Creates a new weighted edge instance connecting the two given vertices and having
+    /// the specified `weight` value.
+    ///
+    /// - Parameter vertices:   A tuple of two non negative `Int` values representing the two
+    ///                         vertices the created weighted edge connects.
+    /// - Parameter weight: A `Weight` value.
+    /// - Returns: A new weighted edge representing a weighted connection between
+    ///            the two given vertices in the graph, with the specified `weight` value.
     public init(vertices: (Int, Int), weight: Weight) {
+        precondition(vertices.0 >= 0 && vertices.1 >= 0, "Vertices must not be negative.")
+        
         self.v = vertices.0
         self.w = vertices.1
         self.weight = weight
     }
     
+    /// Creates a new weighted edge instance which will have specifically as its `tail` and `head`
+    /// vertices values those specified as the parameters `tail` and `head`, and the specified `weight` value.
+    ///
+    /// - Parameter tail:   A non negative `Int` value representing the tail vertex
+    ///                     of the newly created weighted edge.
+    /// - Parameter head:   A non negative `Int` value representing the head vertex
+    ///                     of the newly created weighted edge.
+    /// - Parameter weight: A `Weight` value.
+    /// - Returns:  A new weighted edge instance,
+    ///             which will have specifically as its `tail` and `head` vertices values
+    ///             those specified as the parameters `tail` and `head`, and as `weight`
+    ///             value the one specified as `weight` parameter.
     public init(tail: Int, head: Int, weight: Weight) {
+        precondition(tail >= 0, "Tail vertex must not be negative.")
+        precondition(head >= 0, "Head vertex must not be negative.")
+        
         self.v = tail
         self.w = head
         self.weight = weight
@@ -57,6 +90,44 @@ public struct WeightedEdge<Weight: AdditiveArithmetic & Comparable & Hashable>: 
     
     public func reversedWith(weight: Weight) -> WeightedEdge<Weight> {
         WeightedEdge(tail: w, head: v, weight: weight)
+    }
+    
+    /// Set the vertex connected in the edge by the given one to the specified new value.
+    ///
+    /// - Parameter vertex: A vertex in this edge.
+    /// - Parameter newValue:   The new vertex connected to the given one in this edge.
+    ///                         **Must not be negative**.
+    public mutating func setOther(_ vertex: Int, to newValue: Int) {
+        precondition(newValue >= 0, "New vertex value must not be negative.")
+        
+        if vertex == v {
+            w = newValue
+        }
+        else if vertex == w {
+            v = newValue
+        } else {
+            fatalError("Vertex: \(vertex) is not in edge.")
+        }
+    }
+    
+    /// Sets the tail vertex of this edge to the specified one.
+    ///
+    /// - Parameter newValue:   The new value of the tail vertex of this edge.
+    ///                         **Must not be negative**
+    public mutating func setTail(_ newValue: Int) {
+        precondition(newValue >= 0, "New tail vertex value must not be negative.")
+        
+        v = newValue
+    }
+    
+    /// Sets the head vertex of this edge to the specified one.
+    ///
+    /// - Parameter newValue:   The new value of the head vertex of this edge.
+    ///                         **Must not be negative**
+    public mutating func setHead(_ newValue: Int) {
+        precondition(newValue >= 0, "New head vertex value must not be negative.")
+        
+        w = newValue
     }
     
 }

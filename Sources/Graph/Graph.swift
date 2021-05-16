@@ -67,13 +67,16 @@ public protocol Graph: Hashable {
     ///
     /// - Parameter kind: A `GraphConnections` value.
     /// - Parameter edges:  An array containing the edges of the new graph.
+    ///                     These edges must be treated accordingly to the given `kind`
+    ///                     value when creating the new graph instance.
     ///                     Note that when given an empty array, this initializer must return
     ///                     a graph with its `vertexCount` equal to `0`.
     ///                     On the other hand, when the given array of edges contains
     ///                     some edges, then the vertices connection they represent
     ///                     should be treated as specified with the `kind` parameter
-    ///                     in the process of creating the graph; the newly created graph
-    ///                     must also have a `vertexCount` value that won't make
+    ///                     in the process of creating the graph.
+    ///                     The newly created graph must also have a
+    ///                     `vertexCount` value that won't make
     ///                     overflow any of the added edges.
     /// - Returns: A graph with the specified type of graph connections, containing the given edges.
     init(kind: GraphConnections, edges: [Edge])
