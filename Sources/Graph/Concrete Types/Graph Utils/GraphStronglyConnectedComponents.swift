@@ -31,8 +31,8 @@ import Foundation
 /// Since a graph can contain a huge number of vertices and edges, this utility is a stand-alone class type which
 /// gets initialized with the graph to query.
 /// Results for queries are calculated lazily the first time a query is made.
-/// Note that results are valid for the graph state used at initialization time, thus a new instance must be
-/// created to query a mutated graph instance.
+/// Note that results are valid for the graph state used at initialization time, thus a new instance of this utility
+/// must be created to query a mutated graph.
 /// - Note: For graphs of kind `.undirected` this utility builds connected components
 ///         adopting the depth first search traversal of the graph on every vertex.
 ///         On the other hand, for graphs of kind `.directed`, **strongly connected components**

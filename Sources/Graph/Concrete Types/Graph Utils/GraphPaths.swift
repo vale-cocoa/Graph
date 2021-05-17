@@ -26,7 +26,7 @@
 
 import Foundation
 
-/// An utility to query a graph for paths from a given source vertex.
+/// An utility to query a graph for paths from a given source vertex, adopting a given graph traversal methodology.
 ///
 /// Since a graph can contain a huge number of vertices and edges, this utility is a stand-alone class type which
 /// gets initialized with the graph to query.

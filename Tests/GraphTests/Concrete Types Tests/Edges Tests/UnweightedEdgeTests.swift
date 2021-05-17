@@ -61,6 +61,9 @@ final class UnweightedEdgeTests: XCTestCase {
     
     func testEither() {
         XCTAssertEqual(sut.either, sut.v)
+        let newVertex = sut.either + 100
+        sut.either = newVertex
+        XCTAssertEqual(sut.either, newVertex)
     }
     
     func testOther() {
@@ -72,6 +75,27 @@ final class UnweightedEdgeTests: XCTestCase {
         let reversed = sut.reversed()
         XCTAssertEqual(reversed.v, sut.w)
         XCTAssertEqual(reversed.w, sut.v)
+    }
+    
+    func testSetOther() {
+        let newEither = sut.either + 100
+        let newOther = sut.other(sut.either) + 100
+        sut.setOther(sut.either, to: newOther)
+        XCTAssertEqual(sut.other(sut.either), newOther)
+        sut.setOther(newOther, to: newEither)
+        XCTAssertEqual(sut.either, newEither)
+    }
+    
+    func testSetTail() {
+        let newTail = sut.tail + 100
+        sut.setTail(newTail)
+        XCTAssertEqual(sut.tail, newTail)
+    }
+    
+    func testSetHead() {
+        let newHead = sut.head + 100
+        sut.setHead(newHead)
+        XCTAssertEqual(sut.head, newHead)
     }
     
     func testsCodable() {

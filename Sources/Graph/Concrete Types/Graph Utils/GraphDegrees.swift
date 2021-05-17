@@ -49,6 +49,7 @@ public final class GraphDegrees<G: Graph> {
     public private(set) lazy var allEdges: [G.Edge] = {
         switch graph.kind {
         case .directed:
+            
             return (0..<graph.vertexCount).flatMap({ graph.adjacencies(vertex: $0) })
         case .undirected:
             var addSelfLoop = true

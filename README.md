@@ -230,6 +230,73 @@ A mutable graph, generic over the `Edge` type and adopting as storage for its ed
 An unweighted edge of a graph.
 
 ### `WeightedEdge` weighted graph edge value type
-A weighted edge of a graph, generic over the `Weight` value.
+A weighted edge of a graph, generic over the `Weight` type.
 
 ## Graph Utilities
+Since graphs can have a huge number of vertices and edges it's better to isolate utilities operating over a graph in seprate ad independent code units. 
+Graph utilities in this package are swift classes operating on a graph given at initialization time and building lazily their results when queried. 
+This imply that when a graph mutates, any of these utilities have to be bulit again with the new graph resulting from the mutation, thus having to recalcutale any queried result.
+The approach of having these utilities calculate lazily their queried results has the advantage of making failry inexpensive to create instances, postponing the heavy computations needed to calculate their data to the time a query is firstly made.
+Even though linear complexity algorithms are used in these utilities to calculate their data, these computations can be highly expensive: by isolating them in independent classes these computations can also be safely dispacthed to a different thread.
+
+### `GraphBipartite`
+This utility is queried to check wheter a graph is two colors colorable or not.
+You create a new instance by utilizing its initializer `init(graph:)`, passing the graph instace to query for being bipartite. 
+Availbale graph queries: 
+* `isBipartite` lazy getter, a boolean value either `true` if the graph is two colors colorable, or `false` otherwise.
+* `countOfColoredVertex` lazy getter, an `Int` value representing the count of vertices colored in the graph after the bipartite detection.
+* `countOfNotColoredVertex` lazy getter, an `Int` value representing the count of vertices not colored in graph after the bipartite detection.
+* `isColored(_:)` method, which takes a vertex of the graph and returns a boolean value according to the color state of such vertex after the bipartite detection.
+
+Every query builds the data in the utility for all other ones too the first time is called.
+
+### `GraphCycle`
+Query a graph for checking if it contains a cycle or not.
+Create an instance of this utility by adopting the initializer `init(graph:)` which takes as its argument the graph instance to query for cycle detection.
+Available graph queries: 
+* `hasCycle`  getter (leverages on lazy getter `cycle`), returns a boolean value signaling the presence or not of a cycle in the queried graph.
+* `cycle` lazy getter, returns an array containing the vertices representing the detected cycle in the queried graph. 
+* `topologicalSort` lazy getter, returns an optional array of vertices and is `nil` when the graph is directed graph with a cycle or an undirected graph (that is for undirected graphs the topological sort doesn't exist), or the vertices in topological sort order when the queried graph is a *DAG*.
+
+Every query builds the data in the utility for all other ones too the first time is called.
+
+### `GraphDegrees`
+This utility is used to query a graph for degrees of its vertices and other statistic.
+A `GraphDegrees` instance can be obtained via its initializer `init(graph:)`,  which takes as its argument the graph intance to query.
+Available graph queries:
+* `allEdges` lazy getter, which returns an array containing all the edges of the queried graph in respect to its `kind` value. That is, when the queried graph is of kind `.undirected`, the returned array  contains the edges in the graph representing the *undirected* connection between vertices. On the other hand,  when the queried graph has a `kind` value of `.directed`, the retunred array contains the edges representing a *directed* connection between vertices in the queried graph.
+* `maxOutdegree` lazy getter. Returns an `Int` value representing the maximum outdegree value of a vertex in the queried graph.
+* `averageOutdegree` lazy getter. Returns a `Double` value representing the average outdegree for a vertex in the queried graph.
+* `countOfSelfLoop` lazy getter. Returns the number of edges in the graph representing a self-loop on a vertex.
+* `outdegree(of:)` method, which takes a vertex of the queried graph as its argument, and returns its outdegree value.
+* `indegree(of:)` method. Takes a vertex of the queried graph as its argument, and returns its indegree value.
+
+Queries in this utility are independent to each other in regards of building the data for its results.
+
+### `GraphPaths`
+Query a graph and a source vertex in it for paths to destination vertices in such graph, adopting a specified graph traversal methodology.
+Create a new `GraphPaths` instance by using the initializer `init(graph:source:buildPathsAdopting)`. This initializer takes a graph instance to query, a source vertex of such graph and a `GraphTrabversal` value that would be the chosen strategy to traverse the queried graph from the given source vertex to find a path to a destination vertex.
+Available queries:
+* `hasPath(to:)` method: takes a vertex of the queried graph as its parameter, and returns a bool value signaling the presence in the queried graph of a path connecting the queried source vertex to such given destination vertex.
+* `pathFromSource(to:)` method. This method takes as parameter a vertex in the queried graph, and returns an array eventually containing the vertices to traverse in the queried graph from the queried source vertex to the given destination vertex if such path exists, otherwise an empty array if such path doesn't exists in the queried graph.
+
+### `GraphReachability`
+Query a graph from reachability from a set of its vertices to a given destination vertex.
+To create a new `GraphReachbality` instance use the initalizer `init(graph:source:)` which takes as its arguments the graph to query and a set containing the graph vertices sources. The `sources` parameter must contain at least one vertex of the queried graph, otherwise a run-time error occurs.
+This utility offers only one query: `isReachableFromSources(_:)` method, which takes a vertex in the queried graph and returns a boolean value: `true` when in the queried graph it is possible to reach such given destination vertex from the queried source vertices, otherwise `false`.
+The internal data of this utility is calculated lazily the first time a query is made; that is after the first query is made, any subsequent query will take O(1) complexity to complete.
+
+### `GraphStronglyConnectedComponents`
+This utility provides functionalities for querying a graph's strongly connected components. 
+It can be used with graph with both kind of vertices connections, directed or undirected.
+When an undirected graph is queried, this utility will build the connected componets adopting the classical deep-first-search approach, effectively creating connected components for the graph. 
+When a directed graph is queried, it will use the *Kosaraju-Sharir algorithm* to instead build **strongly** connected components of such graph: that is all vertices inside such component can be reach from the other ones.
+Create a new `GraphStronglyConnectedComponents` instance by using the initializer `init(graph:)`, which takes the graph instance to query for strongly connected components.
+Available queries:
+* `count` a lazy getter returning the number of strongly connected components of the queried graph.
+* `areStronglyConnected(_:_:)` method. Takes as argument two vertices oncluded in queried graph and return a boolean value: `true` when the two vertcies are strongly connected (that is there is a path in the queried graph going from the first vertex to the second vertex and vice-versa), `false` otherwise. 
+* `id(of:)` method, which take as parameter a vertex incliuded in the queried graph, and returns an `Int` value in range `0..<count` which represents the *id* of the strongly connected component where such vertex resides in the queried graph.
+* `stronglyConnectedComponent(with:)` method. Takes as its argument an `Int` value in range `0..<count` which represent the *id* of the strongly connected component to obtain, and returns an array containing the vertices in the queried graph residing in the strongly connected component with such given *id*.
+* `verticesStronglyConnected(to:)` method. This query takes as its argument a vertex included in the queried graph, and returns an array containign all vertices of the queried graph strongly connected to. Such result will also include the given vertex itself, since every vertex in a graph is suppossed to be strongly connected to itself.
+
+Note that 

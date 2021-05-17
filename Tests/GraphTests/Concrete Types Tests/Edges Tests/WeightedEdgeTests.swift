@@ -56,7 +56,7 @@ final class WeightedEdgeTests: XCTestCase {
     func testInitTailHeadWeight() {
         let vertices = givenTwoRandomAndDistinctVertices
         let weight = Double.random(in: 0.5..<10.5)
-        sut = WeightedEdge(tail: vertices.v, head: vertices.w, weight: weight)
+        sut = WeightedEdge(tail: vertices.0, head: vertices.1, weight: weight)
         
         XCTAssertEqual(sut.v, vertices.0)
         XCTAssertEqual(sut.w, vertices.1)
@@ -65,6 +65,15 @@ final class WeightedEdgeTests: XCTestCase {
     
     func testEither() {
         XCTAssertEqual(sut.either, sut.v)
+        let newEither = sut.either + 100
+        sut.either = newEither
+        XCTAssertEqual(sut.either, newEither)
+    }
+    
+    func testWeight() {
+        let newWeight = sut.weight + 100
+        sut.weight = newWeight
+        XCTAssertEqual(sut.weight, newWeight)
     }
     
     func testOther() {
@@ -85,6 +94,27 @@ final class WeightedEdgeTests: XCTestCase {
         XCTAssertEqual(reversed.v, sut.w)
         XCTAssertEqual(reversed.w, sut.v)
         XCTAssertEqual(reversed.weight, newWeight)
+    }
+    
+    func testSetOther() {
+        let newEither = sut.either + 100
+        let newOther = sut.other(sut.either) + 100
+        sut.setOther(sut.either, to: newOther)
+        XCTAssertEqual(sut.other(sut.either), newOther)
+        sut.setOther(newOther, to: newEither)
+        XCTAssertEqual(sut.either, newEither)
+    }
+    
+    func testSetTail() {
+        let newTail = sut.tail + 100
+        sut.setTail(newTail)
+        XCTAssertEqual(sut.tail, newTail)
+    }
+    
+    func testSetHead() {
+        let newHead = sut.head + 100
+        sut.setHead(newHead)
+        XCTAssertEqual(sut.head, newHead)
     }
     
     func testsCodable() {
