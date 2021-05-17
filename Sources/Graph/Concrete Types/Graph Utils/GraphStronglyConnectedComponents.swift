@@ -116,7 +116,7 @@ public final class GraphStronglyConnectedComponents<G: Graph> {
     ///                 **Must be in range 0..<count**.
     /// - Returns:  An `Array` of `Int` values representing the vertices of the queried graph
     ///             laying in the (strongly) connected component with the given *id*.
-    /// - Complexity:   Amortized O(1). It will take O(*V* + *E*) complexity to build this result when
+    /// - Complexity:   Amortized O(*V*). It will take O(*V* + *E*) complexity to build this result when
     ///                 queried for the first time, where *V* is the count of vertices of the queried graph,
     ///                 and *E* is the number of edges in the queried graph.
     public func stronglyConnectedComponent(with id: Int) -> Array<Int> {
@@ -142,7 +142,7 @@ public final class GraphStronglyConnectedComponents<G: Graph> {
     /// - Parameter vertex: A vertex, **must be in the queried graph**.
     /// - Returns: An `Array` of `Int` values representing the vertices of the queried graph
     ///             in the (strongly) connected component containing the given vertex.
-    /// - Complexity:   Amortized O(1). It will take O(*V* + *E*) complexity to build this result when
+    /// - Complexity:   Amortized O(*V*). It will take O(*V* + *E*) complexity to build this result when
     ///                 queried for the first time, where *V* is the count of vertices of the queried graph,
     ///                 and *E* is the number of edges in the queried graph.
     /// - Note: The returned array will also include the given vertex, since this utility considers

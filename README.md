@@ -299,4 +299,5 @@ Available queries:
 * `stronglyConnectedComponent(with:)` method. Takes as its argument an `Int` value in range `0..<count` which represent the *id* of the strongly connected component to obtain, and returns an array containing the vertices in the queried graph residing in the strongly connected component with such given *id*.
 * `verticesStronglyConnected(to:)` method. This query takes as its argument a vertex included in the queried graph, and returns an array containign all vertices of the queried graph strongly connected to. Such result will also include the given vertex itself, since every vertex in a graph is suppossed to be strongly connected to itself.
 
-Note that 
+Every query listed above will trigger the utility to build its internal data used also by the other queries. That is, after a first query is done, every other query permformed will take O(1) complexity to complete, aside for the last two listed above, that return a strongly connected component contents and which are listed as O(*V*) complexity, where *V* is the count of vertices in the queried graph. 
+Practically these two methods memoize the strongly connected components inside a cache, thus they may perform in amortized O(1) complexity when a result has been already constructed for an another query made earlier. 
