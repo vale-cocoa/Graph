@@ -672,8 +672,138 @@ final class GraphTraverseTests: GraphBaseTests {
     }
     
     // MARK: - breadthFirstSearch(preOrderVertexVisit:visitingVertexAdjacency:postOrderVertexVisit:) tests
-    func testBreadthFirstSearch_() {
-        XCTFail("Must implement these tests!")
+    func testBreadthFirstSearch_whenGraphHasNoVerticesThenNoGivenClosureExecutes() {
+        var preOrderCount = 0
+        let preOrder: (Int) -> Void = { _ in preOrderCount += 1 }
+        var adjCount = 0
+        let adj: (Int, WeightedEdge<Double>, Bool) -> Void = { _, _, _ in adjCount += 1 }
+        var postOrderCount = 0
+        let postOrder: (Int) -> Void = { _ in postOrderCount += 1 }
+        sut = AdjacencyList(kind: .directed, vertexCount: 0)
+        sut.breadthFirstSearch(preOrderVertexVisit: preOrder, visitingVertexAdjacency: adj, postOrderVertexVisit: postOrder)
+        XCTAssertEqual(preOrderCount, 0)
+        XCTAssertEqual(adjCount, 0)
+        XCTAssertEqual(postOrderCount, 0)
+        
+        preOrderCount = 0
+        adjCount = 0
+        postOrderCount = 0
+        sut = AdjacencyList(kind: .undirected, vertexCount: 0)
+        sut.breadthFirstSearch(preOrderVertexVisit: preOrder, visitingVertexAdjacency: adj, postOrderVertexVisit: postOrder)
+        XCTAssertEqual(preOrderCount, 0)
+        XCTAssertEqual(adjCount, 0)
+        XCTAssertEqual(postOrderCount, 0)
+    }
+    
+    func testBreadthFirstSearch_whenGraphHasVerticesButNoEdges_preorderVertexAndPostOrderVertexExecutesOnEachVertexVisitingVertexAdjacencyNeverExecutes() {
+        var preorderVisited: Array<Int> = []
+        let preOrder: (Int) -> Void = { preorderVisited.append($0) }
+        var adjCount = 0
+        let adj: (Int, WeightedEdge<Double>, Bool) -> Void = { _, _, _ in adjCount += 1 }
+        var postOrderVisted: Array<Int> = []
+        let postOrder: (Int) -> Void = { postOrderVisted.append($0) }
+        
+        let vertexCount = Int.random(in: 10..<100)
+        sut = AdjacencyList(kind: .directed, vertexCount: vertexCount)
+        sut.breadthFirstSearch(preOrderVertexVisit: preOrder, visitingVertexAdjacency: adj, postOrderVertexVisit: postOrder)
+        XCTAssertEqual(Set(preorderVisited), Set(0..<vertexCount))
+        XCTAssertEqual(adjCount, 0)
+        XCTAssertEqual(Set(postOrderVisted), Set(0..<vertexCount))
+        
+        preorderVisited.removeAll()
+        adjCount = 0
+        postOrderVisted.removeAll()
+        sut = AdjacencyList(kind: .undirected, vertexCount: vertexCount)
+        sut.breadthFirstSearch(preOrderVertexVisit: preOrder, visitingVertexAdjacency: adj, postOrderVertexVisit: postOrder)
+        XCTAssertEqual(Set(preorderVisited), Set(0..<vertexCount))
+        XCTAssertEqual(adjCount, 0)
+        XCTAssertEqual(Set(postOrderVisted), Set(0..<vertexCount))
+    }
+    
+    func testBreadthFirstSearch_whenGraphHasEdges_thenVisitingVertexAdjacencyExecutesForEachEdge() {
+        var preorderVisited: Set<Int> = []
+        let preorder: (Int) -> Void = { preorderVisited.insert($0) }
+        var postorderVisited: Set<Int> = []
+        let postorder: (Int) -> Void = { postorderVisited.insert($0) }
+        var countOfAdjExecutions = 0
+        let adj: (Int, WeightedEdge<Double>, Bool) -> Void = { visitingVertex, edge, hasBeenVisited in
+            XCTAssertTrue(preorderVisited.contains(visitingVertex))
+            let other = edge.other(visitingVertex)
+            XCTAssertEqual(preorderVisited.contains(other), hasBeenVisited)
+            XCTAssertFalse(postorderVisited.contains(visitingVertex))
+            countOfAdjExecutions += 1
+        }
+        
+        whenIsConnectedDirectedGraph()
+        sut.breadthFirstSearch(preOrderVertexVisit: preorder, visitingVertexAdjacency: adj, postOrderVertexVisit: postorder)
+        XCTAssertEqual(countOfAdjExecutions, sut.edgeCount)
+        
+        preorderVisited.removeAll()
+        postorderVisited.removeAll()
+        countOfAdjExecutions = 0
+        
+        whenIsConnectedUndirectedGraph()
+        sut.breadthFirstSearch(preOrderVertexVisit: preorder, visitingVertexAdjacency: adj, postOrderVertexVisit: postorder)
+        XCTAssertEqual(countOfAdjExecutions, sut.edgeCount * 2)
+    }
+    
+    func testBreadthFirstSearch_whenPreorderVisitVertexThrows_thenRethrows() {
+        let preorder: (Int) throws -> Void = { _ in throw err }
+        whenIsConnectedDirectedGraph()
+        do {
+            try sut.breadthFirstSearch(preOrderVertexVisit: preorder, visitingVertexAdjacency: { _, _, _ in }, postOrderVertexVisit: { _ in })
+            XCTFail("Has not rethrown")
+        } catch {
+            XCTAssertEqual(error as NSError, err)
+        }
+        
+        whenIsConnectedUndirectedGraph()
+        do {
+            try sut.breadthFirstSearch(preOrderVertexVisit: preorder, visitingVertexAdjacency: { _, _, _ in }, postOrderVertexVisit: { _ in })
+            XCTFail("Has not rethrown")
+        } catch {
+            XCTAssertEqual(error as NSError, err)
+        }
+    }
+    
+    func testBreadthFirstSearch_whenVisitingVertexAdjacencyThrows_thenRethrows() {
+        let adj: (Int, WeightedEdge<Double>, Bool) throws -> Void = { _, _, _ in
+            throw err
+        }
+        whenIsConnectedDirectedGraph()
+        do {
+            try sut.breadthFirstSearch(preOrderVertexVisit: {_ in }, visitingVertexAdjacency: adj, postOrderVertexVisit: { _ in })
+            XCTFail("Has not rethrown.")
+        } catch {
+            XCTAssertEqual(error as NSError, err)
+        }
+        
+        whenIsConnectedUndirectedGraph()
+        do {
+            try sut.breadthFirstSearch(preOrderVertexVisit: {_ in }, visitingVertexAdjacency: adj, postOrderVertexVisit: { _ in })
+            XCTFail("Has not rethrown.")
+        } catch {
+            XCTAssertEqual(error as NSError, err)
+        }
+    }
+    
+    func testBreadthFirstSearch_whenPostOrderVertexVisitThrows_thenRethrows() {
+        let postorder: (Int) throws -> Void = { _ in throw err }
+        whenIsConnectedDirectedGraph()
+        do {
+            try sut.breadthFirstSearch(preOrderVertexVisit: { _ in }, visitingVertexAdjacency: { _, _, _ in }, postOrderVertexVisit: postorder)
+            XCTFail("Has not rethrown")
+        } catch {
+            XCTAssertEqual(error as NSError, err)
+        }
+        
+        whenIsConnectedUndirectedGraph()
+        do {
+            try sut.breadthFirstSearch(preOrderVertexVisit: { _ in }, visitingVertexAdjacency: { _, _, _ in }, postOrderVertexVisit: postorder)
+            XCTFail("Has not rethrown")
+        } catch {
+            XCTAssertEqual(error as NSError, err)
+        }
     }
     
     // MARK: - Internal traverse helpers tests

@@ -301,3 +301,5 @@ Available queries:
 
 Every query listed above will trigger the utility to build its internal data used also by the other queries. That is, after a first query is done, every other query permformed will take O(1) complexity to complete, aside for the last two listed above, that return a strongly connected component contents and which are listed as O(*V*) complexity, where *V* is the count of vertices in the queried graph. 
 Practically these two methods memoize the strongly connected components inside a cache, thus they may perform in amortized O(1) complexity when a result has been already constructed for an another query made earlier. 
+
+### `GraphTransitiveClosure`
