@@ -24,7 +24,7 @@
 //  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 //  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-/// An utility to query a graph for either containig a cycle or not.
+/// A utility to query a graph for either containig a cycle or not.
 ///
 /// Since a graph can contain a huge number of vertices and edges, this utility is a stand-alone class type which
 /// gets initialized with the graph to query.

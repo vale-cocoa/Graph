@@ -26,7 +26,7 @@
 
 import Foundation
 
-/// An utility to query a graph for some features as the outdegree and indegree of a vertex.
+/// A utility to query a graph for some features as the outdegree and indegree of a vertex.
 ///
 /// Since a graph can contain a huge number of vertices and edges, this utility is a stand-alone class type which
 /// gets initialized with the graph to query.

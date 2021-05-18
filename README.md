@@ -18,8 +18,8 @@ A concrete type conforming to `Graph` protocol must also implement the getter `v
 A graph has its vertices defined in the range `0..<vertexCount`, therefore this getter must return a non negative `Int` value.
 
 ### `Graph` edges
-Type conforming to `Graph` protocol must also define the getter `edgeCount`, which must return a non negative `Int` value repressnting the total number of edges present in the graph instance, in respect to the `kind` value of such instance. 
-As mentioned before, since the direction of connections between vertices in a graph is defined by its `kind` getter, the number of edges present in a graph instance via the getter `edgeCount` must take into account such value. That is for an undirected graph, the value returned by `edgeCount` must count an adjacency between a vertex `v` and `w` as one undirected edge and not as two directed edges.
+Type conforming to `Graph` protocol must also define the getter `edgeCount`, which must return a non negative `Int` value representing the total number of edges present in the graph instance, in respect to the `kind` value of such instance. 
+As mentioned before, since the direction of connections between vertices in a graph is defined by its `kind` getter, the number of edges present in a graph instance via the getter `edgeCount` must take into account such `kind` value. That is for an undirected graph, the value returned by `edgeCount` must count an adjacency between a vertex `v` and `w` as one undirected edge and not as two directed edges.
 On the other hand, for directed graph instances, this value must count as two edges a strong connection between two vertices `v` and `w`: that is when `v` is adjacent to `w` and the other way around.
 
 ### Creating a graph
@@ -32,26 +32,26 @@ Duplicate edges in the array must be added as parallel edges to the graph instan
 `Graph` protocol requires conforming types to implement the method `adjacencies(vertex:)`, this method should return as an array of edges all the connections from the given `vertex` parameter to other vertices in a graph instance.
 Edges returned by this method should be handled according to the `GraphEdge` protocol, thus obtaining the adjacent vertex via the `GraphEdge` method `other(vertex:)` by passing to it the same
 `vertex` value passed originally to the graph method `adjacencies(vertex:)` to obtain such edges.
-Note that this method should also return self loops in the array, if the given vertex as any set in the graph.
+Note that this method should also return self loops in the array, if the given vertex has any set in the graph.
 
 ### Reversing a graph
 `Graph` protocol defines also the method `reversed()`, which should return the *inversion* of a graph instance. 
-When a graph instance has its `kind` value equal to `.directed`, then this method should returned another graph instance with its `kind` value equal to `.directed`, but with the edges of the calee in inverted direction. On the other hand for graph instances with `kind` value equal to `.undirected`, this method might as well just return the same graph instance, since inverting an undirected graph will produce the same graph.
+When a graph instance has its `kind` value equal to `.directed`, then this method should return another graph instance with its `kind` value equal to `.directed`, but with the edges of the calee in inverted direction. On the other hand for graph instances with `kind` value equal to `.undirected`, this method might as well just return the same graph instance; that is inverting an undirected graph will produce the same graph.
 
 ### `Graph` equality and hashing
 `Graph` protocol has its default implementation for equality comparison of two instances taking into account the order of edges in the arrays returned by the `adjacencies(vertex:)` method on every vertex; this very same beahvior is reflected by the default `Hashable` implementation.
 
 ## Traversing a `Graph`
 `Graph` protocol defines some methods with default implementations for traversing a graph.
-These methods have a *Functional Programming* approach, and take one or more non escaping closures that will be executed during the traversal of the graph, passing as parameters to them vertcies and/or edges encountered during such traversing.
+These methods have a *Functional Programming* approach, and take one or more non escaping closures that will be executed during the traversal of the graph, passing as parameters to them vertices and/or edges encountered during such traversal, and other data relevant to the traversal.
 Some of these methods also give the opportunity to the caller to specify the traversal strategy to adopt,
 by getting as parameter a `GraphTraversal` value.
 
 ### Visit every vertex of a graph
-Both methods `visitEveryVertexAdjacency(adopting:_:)` and `visitAllVertices(adopting:_:)` will visit every vertex in the graph instance, regardless if any of the vertex is disconnected in the graph. 
-These methods will start at vertex `0` of the graph, proceeding on the adjacencies by adopting the given traversal strategy, and then keep visiting those vertices not touched by the traversal of the previous vertex taken into account, until every vertex in the graph has been visited.
-Note that adjacencies leading to vertices already being visited during the traversal are not enumerated.
-Therefore the method executing a closure receiving the visited vertex and an edge from its adjacencies as parameter will only execute such closure for adjacencies leading to vertices not yet visited, and will not enumerate parallel edges or self-loop edges. 
+Both methods `visitEveryVertexAdjacency(adopting:_:)` and `visitAllVertices(adopting:_:)` will visit every vertex in the graph instance, **regardless if any of the vertex is disconnected in the graph**. 
+These methods will start at vertex `0` of the graph, proceeding on the adjacencies by adopting the given traversal strategy, and then keep visiting those vertices not discovered by the adjacencies found, until every vertex in the graph has been visited.
+Note that **adjacencies leading to vertices already being visited during the traversal are not enumerated**.
+Therefore the method executing a closure receiving the visited vertex and an edge from its adjacencies as parameter will only execute such closure for adjacencies leading to vertices not yet visited, and **will not enumerate parallel edges or self-loop edges**. 
 
 ### Visited vertices starting from a source vertex
 The three methods with signature `visitedVertices(adopting:reachableFrom:_:)` will proceed from the given `source` vertex following adjacencies adopting the specified traversal methodology, by executing the given body closure and finally returning a set containig all the vertices visited during the traversal. 
@@ -305,3 +305,8 @@ Every query listed above will trigger the utility to build its internal data use
 Practically these two methods memoize the strongly connected components inside a cache, thus they may perform in amortized O(1) complexity when a result has been already constructed for an another query made earlier. 
 
 ### `GraphTransitiveClosure`
+Create this utility by using the initializer `init(graph:)`, which takes the graph to query as its parameter. Then query it for reachablity from a source vertex to another destination vertex (both must be in queried graph) via the instance method `rachability(source:destination:)` , which returns a boolean value as result.
+The *transitive closure* is usallly used for directed graphs, although this utility can be built with both
+directed or undirected graphs. 
+* When the queried graph is undirected, then internally the utility will just adopt the connection components of the graph to determine vertices reachability: that is in an undirected graph all vertices in the same connected component are connected to each other. Such connected components for the queried graph are built the first time a query is made, and are valid for every vertex in the graph used as source parameter.
+* For queried directed graphs , the utility builds the reachability map from the given `source` vertex and check if it contains the given `destination` vertex. Such map for the given `source` vertex gets memoized after being built the first time, thus when querying again the same `source` vertex for reachability towards another `destination` vertex, it gets most likely reused avoiding the process of rebuilding it. Note that these reachability maps for every `source` vertex are individually and lazily built the first time such vertex is queried.
