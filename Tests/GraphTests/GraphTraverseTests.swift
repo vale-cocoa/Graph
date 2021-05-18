@@ -806,11 +806,153 @@ final class GraphTraverseTests: GraphBaseTests {
         }
     }
     
+    // MARK: - visitedVertices(adopting:reachAbleFrom:_:) stoppable version tests
+    func testVisitedVertices_3_whenGraphHasNoEdge_thenBodyNeverExecutesAndReturnsSetContainingSourceOnly() {
+        var countOfExecutions = 0
+        let body: (inout Bool, Int, WeightedEdge<Double>, Bool) -> Void = { _, _, _, _ in
+            countOfExecutions += 1
+        }
+        let vertexCount = Int.random(in: 1..<100)
+        sut = AdjacencyList(kind: .directed, vertexCount: vertexCount)
+        for vertex in 0..<vertexCount {
+            countOfExecutions = 0
+            XCTAssertEqual(sut.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: vertex, body), [vertex])
+            XCTAssertEqual(countOfExecutions, 0)
+            
+            countOfExecutions = 0
+            XCTAssertEqual(sut.visitedVertices(adopting: .BreadthFirstSearch, reachableFrom: vertex, body), [vertex])
+            XCTAssertEqual(countOfExecutions, 0)
+        }
+        
+        sut = AdjacencyList(kind: .undirected, vertexCount: vertexCount)
+        for vertex in 0..<vertexCount {
+            countOfExecutions = 0
+            XCTAssertEqual(sut.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: vertex, body), [vertex])
+            XCTAssertEqual(countOfExecutions, 0)
+            
+            countOfExecutions = 0
+            XCTAssertEqual(sut.visitedVertices(adopting: .BreadthFirstSearch, reachableFrom: vertex, body), [vertex])
+            XCTAssertEqual(countOfExecutions, 0)
+        }
+    }
+    
+    func testVisitedVertices_3_whenEdgesInGraphAndSourceHasNoAdjacencies_thenBodyNeverExecutesAndReturnsSetContainingSourceOnly() {
+        var countOfExecutions = 0
+        let body: (inout Bool, Int, WeightedEdge<Double>, Bool) -> Void = { _, _, _, _ in
+            countOfExecutions += 1
+        }
+        whenIsDirectedWithEdgesNotParallelNorSelfCycleNorTwoWaysAdjacencies()
+        for vertex in 0..<sut.vertexCount where sut._adjacencies[vertex].isEmpty {
+            countOfExecutions = 0
+            XCTAssertEqual(sut.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: vertex, body), [vertex])
+            XCTAssertEqual(countOfExecutions, 0)
+            
+            countOfExecutions = 0
+            XCTAssertEqual(sut.visitedVertices(adopting: .BreadthFirstSearch, reachableFrom: vertex, body), [vertex])
+            XCTAssertEqual(countOfExecutions, 0)
+        }
+        
+        whenIsUndirectedWithEdgesNotParallelNorSelfCycle()
+        for vertex in 0..<sut.vertexCount where sut._adjacencies[vertex].isEmpty {
+            countOfExecutions = 0
+            XCTAssertEqual(sut.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: vertex, body), [vertex])
+            XCTAssertEqual(countOfExecutions, 0)
+            
+            countOfExecutions = 0
+            XCTAssertEqual(sut.visitedVertices(adopting: .BreadthFirstSearch, reachableFrom: vertex, body), [vertex])
+            XCTAssertEqual(countOfExecutions, 0)
+        }
+    }
+    
+    func testVisitedVertices_3_whenGraphContainsEdgesAndSourceHasAdjacencies_thenBodyExecutesAndReturnsVisitedVerticesIncludingSource() {
+        var countOfExecutions = 0
+        let body: (inout Bool, Int, WeightedEdge<Double>, Bool) -> Void = { _, _, _, _ in
+            countOfExecutions += 1
+        }
+        whenIsConnectedDirectedGraph()
+        for vertex in 0..<sut.vertexCount {
+            countOfExecutions = 0
+            XCTAssertEqual(sut.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: vertex, body), Set(vertex..<sut.vertexCount))
+            XCTAssertEqual(countOfExecutions, sut.edgeCount - vertex)
+            
+            countOfExecutions = 0
+            XCTAssertEqual(sut.visitedVertices(adopting: .BreadthFirstSearch, reachableFrom: vertex, body), Set(vertex..<sut.vertexCount))
+            XCTAssertEqual(countOfExecutions, sut.edgeCount - vertex)
+        }
+        
+        whenIsConnectedUndirectedGraph()
+        for vertex in 0..<sut.vertexCount {
+            countOfExecutions = 0
+            XCTAssertEqual(sut.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: vertex, body), Set(0..<sut.vertexCount))
+            XCTAssertEqual(countOfExecutions, sut.edgeCount * 2)
+            
+            countOfExecutions = 0
+            XCTAssertEqual(sut.visitedVertices(adopting: .BreadthFirstSearch, reachableFrom: vertex, body), Set(0..<sut.vertexCount))
+            XCTAssertEqual(countOfExecutions, sut.edgeCount * 2)
+        }
+    }
+    
+    func testVisitedVertices_3_whenStopIsSetToTrueInBody_thenTraversalIsInterrupted() {
+        var vertexCount = 0
+        let body: (inout Bool, Int, WeightedEdge<Double>, Bool) -> Void = { stop, vertex, _, _ in
+            if vertex == vertexCount / 2 {
+                stop = true
+            }
+        }
+        
+        whenIsConnectedDirectedGraph()
+        vertexCount = sut.vertexCount
+        var visited = sut.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: 0, body)
+        XCTAssertEqual(visited, Set(0...(sut.vertexCount / 2 + 1)))
+        visited = sut.visitedVertices(adopting: .BreadthFirstSearch, reachableFrom: 0, body)
+        XCTAssertEqual(visited, Set(0...(sut.vertexCount / 2 + 1)))
+        
+        whenIsConnectedUndirectedGraph()
+        vertexCount = sut.vertexCount
+        visited = sut.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: 0, body)
+        XCTAssertEqual(visited, Set(0...(sut.vertexCount / 2)))
+        visited = sut.visitedVertices(adopting: .BreadthFirstSearch, reachableFrom: 0, body)
+        XCTAssertEqual(visited, Set(0...(sut.vertexCount / 2)))
+    }
+    
+    func testVisitedVertices_3_whenBodyThorws_ThenRethrows() {
+        let body: (inout Bool, Int, WeightedEdge<Double>, Bool) throws -> Void = { _, _ ,_ ,_ in
+            throw err
+        }
+        whenIsConnectedDirectedGraph()
+        do {
+            let _ = try sut.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: 0, body)
+            XCTFail("Didn't rethrow.")
+        } catch {
+            XCTAssertEqual(error as NSError, err)
+        }
+        do {
+            let _ = try sut.visitedVertices(adopting: .BreadthFirstSearch, reachableFrom: 0, body)
+            XCTFail("Didn't rethrow.")
+        } catch {
+            XCTAssertEqual(error as NSError, err)
+        }
+        
+        whenIsConnectedUndirectedGraph()
+        do {
+            let _ = try sut.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: 0, body)
+            XCTFail("Didn't rethrow.")
+        } catch {
+            XCTAssertEqual(error as NSError, err)
+        }
+        do {
+            let _ = try sut.visitedVertices(adopting: .BreadthFirstSearch, reachableFrom: 0, body)
+            XCTFail("Didn't rethrow.")
+        } catch {
+            XCTAssertEqual(error as NSError, err)
+        }
+    }
+    
     // MARK: - Internal traverse helpers tests
     // These methods are just tested for checking that the traversal
-    // of graph is done correctly. Other things are tested on public
-    // methods tests done earlier, since the public methods rely
-    // on these helpers.
+    // of the graph is done correctly. Other things are tested on public
+    // methods tests done earlier, that is the public methods rely
+    // on these internal helper methods.
     func testRecursiveDFSOnAdiacentEdges_graphDirected() {
         var visited: Set<Int> = []
         var adjacenciesVisited: Array<Int> = []
@@ -901,6 +1043,26 @@ final class GraphTraverseTests: GraphBaseTests {
         XCTAssertEqual(postOrderVisited, [9, 8, 7, 5, 4, 6, 3, 2, 1, 0])
     }
     
+    func testRecursiveDFS_StopVertexAdjacencyHasBeenVisited_graphDirected() {
+        var visited: Set<Int> = []
+        var verticesOrder: Array<Int> = []
+        sut = AdjacencyList(kind: .directed, edges: givenEdgesForTraversalTests())
+        sut.recursiveDFS(reachableFrom: 0, visited: &visited, { _, vertex, _, _ in
+            verticesOrder.append(vertex)
+        })
+        XCTAssertEqual(verticesOrder, [0, 3, 4, 5, 7, 8, 3, 0, 1])
+    }
+    
+    func testRecursiveDFS_StopVertexAdjacencyHasBeenVisited_graphUndirected() {
+        var visited: Set<Int> = []
+        var verticesOrder: Array<Int> = []
+        sut = AdjacencyList(kind: .undirected, edges: givenEdgesForTraversalTests())
+        sut.recursiveDFS(reachableFrom: 0, visited: &visited, { _, vertex, _, _ in
+            verticesOrder.append(vertex)
+        })
+        XCTAssertEqual(verticesOrder, [0, 3, 3, 4, 4, 5, 5, 7, 7, 8, 8, 9, 3, 6, 0, 1, 1, 2])
+    }
+    
     func testIterativeBFSOnAdjacentEdges_graphDirected() {
         var visited: Set<Int> = []
         var adjacenciesVisited: Array<Int> = []
@@ -949,6 +1111,26 @@ final class GraphTraverseTests: GraphBaseTests {
         sut.iterativeBFS(reachableFrom: 0, visited: &visited, body)
         XCTAssertEqual(visited, Set(0..<10))
         XCTAssertEqual(adjacenciesVisited, expectedResult)
+    }
+    
+    func testIterativeBFS_StopVertexAdjacencyHasBeenVisited_graphDirected() {
+        var visited: Set<Int> = []
+        var verticesOrder: Array<Int> = []
+        sut = AdjacencyList(kind: .directed, edges: givenEdgesForTraversalTests())
+        sut.iterativeBFS(reachableFrom: 0, visited: &visited, { _, vertex, _, _ in
+            verticesOrder.append(vertex)
+        })
+        XCTAssertEqual(verticesOrder, [0, 0, 3, 3, 1, 4, 5, 7, 8])
+    }
+    
+    func testIterativeBFS_StopVertexAdjacencyHasBeenVisited_graphUndirected() {
+        var visited: Set<Int> = []
+        var verticesOrder: Array<Int> = []
+        sut = AdjacencyList(kind: .undirected, edges: givenEdgesForTraversalTests())
+        sut.iterativeBFS(reachableFrom: 0, visited: &visited, { _, vertex, _, _ in
+            verticesOrder.append(vertex)
+        })
+        XCTAssertEqual(verticesOrder, [0, 0, 3, 3, 3, 1, 1, 4, 4, 6, 2, 5, 5, 7, 7, 8, 8, 9])
     }
     
 }

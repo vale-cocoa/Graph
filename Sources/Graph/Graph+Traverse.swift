@@ -56,13 +56,13 @@ extension Graph {
     ///                     the vertex currently being visited during the traversal.
     ///                     **Does not execute for parallel edges nor for edges expressing a self cycle**.
     ///                     **Does not execute when the vertex being visited has no adjacencies to a different vertex not yet being visited**.
-    /// - Parameter visitingVertex: An `Int` value representing the vertex currently being visited
+    /// - Parameter visitedVertex: An `Int` value representing the vertex currently being visited
     ///                             by the traversal.
     /// - Parameter adjacency:  An `Edge` representing an adjacency found for the currently visited vertex,
     ///                         pointing to a vertex not yet been visited.
     /// - Complexity:   O(*V* + *E*) where *V* is the number of vertices in the graph,
     ///                 and *E* is the number of edges in the graph.
-    public func visitEveryVertexAdjacency(adopting traversal: GraphTraversal, _ body: (_ visitingVertex: Int, _ adjacency: Edge) throws -> Void) rethrows {
+    public func visitEveryVertexAdjacency(adopting traversal: GraphTraversal, _ body: (_ visitedVertex: Int, _ adjacency: Edge) throws -> Void) rethrows {
         guard vertexCount > 0 else { return }
         
         var visited = Set<Int>()
@@ -87,7 +87,7 @@ extension Graph {
     ///                     the vertex currently being visited during the traversal.
     ///                     **Does not execute for parallel edges nor for edges expressing a self cycle**.
     ///                     **Does not execute when the vertex being visited has no adjacencies to a different vertex not yet being visited**.
-    /// - Parameter visitingVertex: An `Int` value representing the vertex currently being visited
+    /// - Parameter visitedVertex: An `Int` value representing the vertex currently being visited
     ///                             by the traversal.
     /// - Parameter adjacency:  An `Edge` representing an adjacency found for the currently visited vertex,
     ///                         pointing to a vertex not yet been visited.
@@ -97,7 +97,9 @@ extension Graph {
     ///                 and *E* is the number of edges in the graph.
     /// - Precondition: `source` parameter's value must be included in `0..<vertexCount` range.
     @discardableResult
-    public func visitedVertices(adopting traversal: GraphTraversal, reachableFrom source: Int, _ body: (_ visitingVertex: Int, _ adjacency: Edge) throws -> Void) rethrows -> Set<Int> {
+    public func visitedVertices(adopting traversal: GraphTraversal, reachableFrom source: Int, _ body: (_ visitedVertex: Int, _ adjacency: Edge) throws -> Void) rethrows -> Set<Int> {
+        precondition(0..<vertexCount ~= source, "Vertex: \(source) is not included in graph.")
+        
         var visited = Set<Int>()
         if traversal == .DeepFirstSearch {
             try recursiveDFS(reachableFrom: source, visited: &visited, body)
@@ -115,12 +117,12 @@ extension Graph {
     ///   - traversal:  A `GraphTraversal` value representing
     ///                 the graph search methodology to adopt.
     ///   - body: A closure executed when a not yet visited vertex is being visited by the traversal.
-    ///   - visitingVertex: An `Int` value representing the vertex currently being visited
+    ///   - visitedVertex: An `Int` value representing the vertex currently being visited
     ///                     by the traversal.
     /// - Complexity:   O(*V* + *E*) where *V* is the number of vertices in the graph,
     ///                 and *E* is the number of edges in the graph.
     /// - Note: This method visits once each vertex in the graph, even those disconnected from the others.
-    public func visitAllVertices(adopting traversal: GraphTraversal, _ body: (_ visitingVertex: Int) throws -> Void) rethrows {
+    public func visitAllVertices(adopting traversal: GraphTraversal, _ body: (_ visitedVertex: Int) throws -> Void) rethrows {
         guard vertexCount > 0 else { return }
         
         var visited = Set<Int>()
@@ -142,7 +144,7 @@ extension Graph {
     ///                 the graph search methodology to adopt.
     ///   - source: A vertex to start from.
     ///   - body: A closure executed when a not yet visited vertex is being visited by the traversal.
-    ///   - visitingVertex: An `Int` value representing the vertex currently being visited
+    ///   - visitedVertex: An `Int` value representing the vertex currently being visited
     ///                     by the traversal.
     /// - Returns: A set containing all vertices visited during the traversal, including the given `source` one.
     /// - Precondition: `source` parameter must be a value in `0..<vertexCount` range.
@@ -150,7 +152,7 @@ extension Graph {
     ///                 and *E* is the number of edges in the graph.
     /// - Warning: Vertices in graph not reachable from the given `source` one are not visited.
     @discardableResult
-    public func visitedVertices(adopting traversal: GraphTraversal, reachableFrom source: Int, _ body: (_ visitingVertex: Int) throws -> Void) rethrows -> Set<Int> {
+    public func visitedVertices(adopting traversal: GraphTraversal, reachableFrom source: Int, _ body: (_ visitedVertex: Int) throws -> Void) rethrows -> Set<Int> {
         var visited = Set<Int>()
         if traversal == .DeepFirstSearch {
             try recursiveDFS(reachableFrom: source, visited: &visited, body)
@@ -167,11 +169,11 @@ extension Graph {
     ///
     /// - Parameter preOrderVertexVisit:    A closure executed **before** the traversal proceeds on
     ///                                     checking the adjacencies of the currently visited vertex.
-    /// - Parameter visitingVertex: An `Int` value representing the vertex currently being visited
+    /// - Parameter visitedVertex: An `Int` value representing the vertex currently being visited
     ///                             by the traversal.
     /// - Parameter visitingVertexAdjacency:    A closure being executed when an adjacency
     ///                                         is found for the vertex being currently visited.
-    /// - Parameter visitingVertex: An `Int` value representing the vertex currently being visited
+    /// - Parameter visitedVertex: An `Int` value representing the vertex currently being visited
     ///                             by the traversal.
     /// - Parameter adjacency:  An `Edge` representing an adjacency found for the currently visited vertex.
     /// - Parameter hasBeenVisited: A `Bool` value, `true` when the adjacencent vertex in the edge
@@ -181,9 +183,9 @@ extension Graph {
     ///                                     the adjacencies of the visited vertex —thus also executed
     ///                                     after having visited recursively those not yet
     ///                                     visited.
-    /// - Parameter visitingVertex: An `Int` value representing the vertex currently being visited
+    /// - Parameter visitedVertex: An `Int` value representing the vertex currently being visited
     ///                             by the traversal.
-    public func depthFirstSearch(preOrderVertexVisit: (_ visitingVertex: Int) throws -> Void, visitingVertexAdjacency: (_ visitingVertex: Int, _ adjacency: Edge, _ hasBeenVisited: Bool) throws -> Void, postOrderVertexVisit: (_ visitingVertex: Int) throws -> Void) rethrows {
+    public func depthFirstSearch(preOrderVertexVisit: (_ visitedVertex: Int) throws -> Void, visitingVertexAdjacency: (_ visitedVertex: Int, _ adjacency: Edge, _ hasBeenVisited: Bool) throws -> Void, postOrderVertexVisit: (_ visitedVertex: Int) throws -> Void) rethrows {
         guard vertexCount > 0 else { return }
         
         var visited: Set<Int> = []
@@ -198,11 +200,11 @@ extension Graph {
     ///
     /// - Parameter preOrderVertexVisit:    A closure executed **before** the traversal proceeds on
     ///                                     checking the adjacencies of the currently visited vertex.
-    /// - Parameter visitingVertex: An `Int` value representing the vertex currently being visited
+    /// - Parameter visitedVertex: An `Int` value representing the vertex currently being visited
     ///                             by the traversal.
     /// - Parameter visitingVertexAdjacency:    A closure being executed when an adjacency
     ///                                         is found for the vertex being currently visited.
-    /// - Parameter visitingVertex: An `Int` value representing the vertex currently being visited
+    /// - Parameter visitedVertex: An `Int` value representing the vertex currently being visited
     ///                             by the traversal.
     /// - Parameter adjacency:  An `Edge` representing an adjacency found for the currently visited vertex.
     /// - Parameter hasBeenVisited: A `Bool` value, `true` when the adjacencent vertex in the edge
@@ -210,9 +212,9 @@ extension Graph {
     ///                             discovered.
     /// - Parameter postOrderVertexVisit:   A closure executed **after** the traversal had checked
     ///                                     the adjacencies of the visited vertex.
-    /// - Parameter visitingVertex: An `Int` value representing the vertex currently being visited
+    /// - Parameter visitedVertex: An `Int` value representing the vertex currently being visited
     ///                             by the traversal.
-    public func breadthFirstSearch(preOrderVertexVisit: (_ visitingVertex: Int) throws -> Void, visitingVertexAdjacency: (_ visitingVertex: Int, _ adjacency: Edge, _ hasBeenVisited: Bool) throws -> Void, postOrderVertexVisit: (_ visitingVertex: Int) throws -> Void) rethrows {
+    public func breadthFirstSearch(preOrderVertexVisit: (_ visitedVertex: Int) throws -> Void, visitingVertexAdjacency: (_ visitedVertex: Int, _ adjacency: Edge, _ hasBeenVisited: Bool) throws -> Void, postOrderVertexVisit: (_ visitedVertex: Int) throws -> Void) rethrows {
         guard vertexCount > 0 else { return }
         
         var visited = Set<Int>()
@@ -229,6 +231,50 @@ extension Graph {
                 try postOrderVertexVisit(source)
             }
         }
+    }
+    
+    /// Traverses the graph starting from the given source vertex, adopting the specified type of traversal,
+    /// executes the given body closure on edges leading to adjacencies for every vertex visited,
+    /// and then returns a set of visited vertices during such traversal.
+    /// The traversal stops as soon as the `stop` inout parameter of body closure is set to `true`,
+    /// or when every reachable vertex in the graph starting from the given source vertex has been visited.
+    ///
+    /// - Parameter traversal: A `GraphTraversal` value, specifying the type of graph traversal to adopt.
+    /// - Parameter source: A vertex on the graph from which the traversal starts.
+    ///                     **Must be included in the graph**.
+    /// - Parameter body:   A closure that gets executed every time an edge leading to an adjacency in graph
+    ///                     is enumerated for the vertex actually being visited by the traversal.
+    /// - Parameter stop:   An `inout` boolean value that can be set to `true` in the given body closure to
+    ///                     halt prematurely the traversal.
+    /// - Parameter visitedVertex: The vertex being visited.
+    /// - Parameter adjacency: An edge leading to an adjacency of the vertex being visited.
+    /// - Parameter hasBeenVisited: A boolean value, `true` when the edge
+    ///                             passed as `adjacency` parameter to the closure leads
+    ///                             from the visited vertex to an adjacencent vertex already been
+    ///                             visited during the traversal.
+    /// - Precondition: `source` parameter must be a value in `0..<vertexCount` range.
+    /// - Returns: A set including all vertices that have been visited during the traversal.
+    /// - Complexity:   O(*V* + *E*), where *V* are the number of vertices included in the graph, and
+    ///                 *E* is the count of edges of the graph.
+    /// - Warning: Vertices in graph not reachable from the given `source` one are not visited.
+    /// - Note: This traversal method will enumerate every edge of visited vertices executing the body
+    ///         closure each time a new one is found, including edges representing self-loops or parallel connections.
+    /// - Important:    A vertex is included in the returned set —hence marked as visited—
+    ///                 as soon as it is discovered by the traversal.
+    ///                 Moreover the given source vertex always appears inside the returned set.
+    @discardableResult
+    public func visitedVertices(adopting traversal: GraphTraversal, reachableFrom source: Int, _ body: (_ stop: inout Bool, _ visitedVertex: Int, _ adjacency: Edge, _ hasBeenVisited: Bool) throws -> Void) rethrows -> Set<Int> {
+        precondition(0..<vertexCount ~= source, "Vertex: \(source) is not included in graph.")
+        
+        var visited: Set<Int> = []
+        switch traversal {
+        case .DeepFirstSearch:
+            try recursiveDFS(reachableFrom: source, visited: &visited, body)
+        case .BreadthFirstSearch:
+            try iterativeBFS(reachableFrom: source, visited: &visited, body)
+        }
+        
+        return visited
     }
     
 }
@@ -273,6 +319,23 @@ extension Graph {
         try postOrderVertexVisit(vertex)
     }
     
+    func recursiveDFS(reachableFrom vertex: Int, visited: inout Set<Int>, _ body: (inout Bool, Int, Edge, Bool) throws -> Void) rethrows {
+        visited.insert(vertex)
+        
+        var stop = false
+        for edge in adjacencies(vertex: vertex) {
+            let other = edge.other(vertex)
+            let hasBeenVisited = !visited.insert(other).inserted
+            try body(&stop, vertex, edge, hasBeenVisited)
+            guard stop == false else { return }
+            
+            guard !hasBeenVisited else { continue }
+            
+            try recursiveDFS(reachableFrom: other, visited: &visited, body)
+            guard stop == false else { return }
+        }
+    }
+    
     // MARK: - BFS
     func iterativeBFS(reachableFrom source: Int, visited: inout Set<Int>, _ body: (Int, Edge) throws -> Void) rethrows {
         visited.insert(source)
@@ -303,8 +366,28 @@ extension Graph {
         }
     }
     
+    func iterativeBFS(reachableFrom source: Int, visited: inout Set<Int>, _ body: (inout Bool, Int, Edge, Bool) throws-> Void) rethrows {
+        guard visited.insert(source).inserted else { return }
+        
+        var deque: Deque<Int> = [source]
+        var stop = false
+        OuterLoop: while let vertex = deque.dequeue() {
+            InnerLoop: for edge in adjacencies(vertex: vertex) {
+                let other = edge.other(vertex)
+                let hasBeenVisited = !visited.insert(other).inserted
+                try body(&stop, vertex, edge, hasBeenVisited)
+                guard stop == false else { break OuterLoop }
+                
+                guard !hasBeenVisited else { continue InnerLoop }
+                
+                deque.enqueue(other)
+            }
+        }
+    }
+    
 }
 
+// MARK: - GraphTraversal Codable conformance
 extension GraphTraversal: Codable {
     enum Base: String, Codable {
         case DeepFirstSearch
