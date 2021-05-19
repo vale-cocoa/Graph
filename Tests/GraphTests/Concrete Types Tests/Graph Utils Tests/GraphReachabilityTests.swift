@@ -52,23 +52,40 @@ final class GraphReachabilityTests: XCTestCase {
         return AdjacencyList(kind: kind, edges: edges)
     }
     
+    func givenRandomSources<G: Graph>(_ graph: G) -> Set<Int> {
+        var vertices = Array(0..<graph.vertexCount).shuffled()
+        let k = Int.random(in: 0..<(graph.vertexCount - 1))
+        vertices.removeLast(k)
+        
+        return Set(vertices)
+    }
+    
+    // MARK: - When
+    func whenGraphHasNoEdgesRandomSources(kind: GraphConnections) {
+        let graph = givenGraphWithNoEdges(kind: kind)
+        let sources = givenRandomSources(graph)
+        sut = GraphReachability(graph: graph, sources: sources)
+    }
+    
+    func whenGraphHasEdgesRandomSources(kind: GraphConnections) {
+        let graph = givenGraphWithEdges(kind: kind)
+        let sources = givenRandomSources(graph)
+        sut = GraphReachability(graph: graph, sources: sources)
+    }
+    
     // MARK: - Tests
     func testInitGraphSources() {
         let graph = givenGraphWithEdges(kind: GraphConnections.allCases.randomElement()!)
-        var sources = (0..<graph.vertexCount).shuffled()
-        sources.removeLast(Int.random(in: 1..<graph.vertexCount))
-        sut = GraphReachability(graph: graph, sources: Set(sources))
+        let sources = givenRandomSources(graph)
+        sut = GraphReachability(graph: graph, sources: sources)
         XCTAssertNotNil(sut)
         XCTAssertEqual(sut.graph, graph)
         XCTAssertEqual(sut.sources, Set(sources))
     }
     
     func testIsReachableFromSources_whenGraphHasNoEdges() {
-        var graph = givenGraphWithNoEdges(kind: .directed)
-        var sources = (0..<graph.vertexCount).shuffled()
-        sources.removeLast(Int.random(in: 1..<graph.vertexCount))
-        sut = GraphReachability(graph: graph, sources: Set(sources))
-        for destination in 0..<graph.vertexCount {
+        whenGraphHasNoEdgesRandomSources(kind: .directed)
+        for destination in 0..<sut.graph.vertexCount {
             if sut.sources.contains(destination) {
                 XCTAssertTrue(sut.isReachableFromSources(destination))
             } else {
@@ -76,11 +93,8 @@ final class GraphReachabilityTests: XCTestCase {
             }
         }
         
-        graph = givenGraphWithNoEdges(kind: .undirected)
-        sources = (0..<graph.vertexCount).shuffled()
-        sources.removeLast(Int.random(in: 1..<graph.vertexCount))
-        sut = GraphReachability(graph: graph, sources: Set(sources))
-        for destination in 0..<graph.vertexCount {
+        whenGraphHasNoEdgesRandomSources(kind: .undirected)
+        for destination in 0..<sut.graph.vertexCount {
             if sut.sources.contains(destination) {
                 XCTAssertTrue(sut.isReachableFromSources(destination))
             } else {
@@ -90,28 +104,142 @@ final class GraphReachabilityTests: XCTestCase {
     }
     
     func testIsReachableFromSources_whenGraphHasEdges() {
-        var graph = givenGraphWithEdges(kind: .directed)
-        var sources = (0..<graph.vertexCount).shuffled()
-        sources.removeLast(Int.random(in: 1..<graph.vertexCount))
-        sut = GraphReachability(graph: graph, sources: Set(sources))
+        whenGraphHasEdgesRandomSources(kind: .directed)
         var visited: Set<Int> = []
-        for source in sources {
-            visited.formUnion(graph.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: source, {_ in }))
+        for source in sut.sources {
+            visited.formUnion(sut.graph.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: source, {_ in }))
         }
-        for destination in 0..<graph.vertexCount {
+        for destination in 0..<sut.graph.vertexCount {
             XCTAssertEqual(sut.isReachableFromSources(destination), visited.contains(destination))
         }
         
-        graph = givenGraphWithEdges(kind: .undirected)
-        sources = (0..<graph.vertexCount).shuffled()
-        sources.removeLast(Int.random(in: 1..<graph.vertexCount))
-        sut = GraphReachability(graph: graph, sources: Set(sources))
-        visited.removeAll(keepingCapacity: true)
-        for source in sources {
-            visited.formUnion(graph.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: source, {_ in }))
+        whenGraphHasEdgesRandomSources(kind: .undirected)
+        visited = []
+        for source in sut.sources {
+            visited.formUnion(sut.graph.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: source, {_ in }))
         }
-        for destination in 0..<graph.vertexCount {
+        for destination in 0..<sut.graph.vertexCount {
             XCTAssertEqual(sut.isReachableFromSources(destination), visited.contains(destination))
+        }
+    }
+    
+}
+
+// MARK: - Tests for default implementation methods isReachable(_:source) and isReachable(_:sources:)
+final class GraphInPlaceReachabilityTests: XCTestCase {
+    var sut: AdjacencyList<WeightedEdge<Double>>!
+    
+    override func setUp() {
+        super.setUp()
+        
+        let kind = GraphConnections.allCases.randomElement()!
+        let vertexCount = Int.random(in: 10..<100)
+        sut = AdjacencyList<WeightedEdge<Double>>(kind: kind, vertexCount: vertexCount)
+    }
+    
+    override func tearDown() {
+        sut = nil
+        super.tearDown()
+    }
+    
+    // MARK: - Given
+    var givenRandomSources: Set<Int> {
+        var vertices = Array(0..<sut.vertexCount).shuffled()
+        let k = Int.random(in: 0..<(sut.vertexCount - 1))
+        vertices.removeLast(k)
+        
+        return Set(vertices)
+    }
+    
+    // MARK: - When
+    func whenGraphHasNoEdges(kind: GraphConnections) {
+        let vertexCount = Int.random(in: 10..<100)
+        sut = AdjacencyList<WeightedEdge<Double>>(kind: kind, vertexCount: vertexCount)
+    }
+    
+    func whenGraphHasEdges(kind: GraphConnections) {
+        let edges = givenRandomWeightedEdges()
+        sut = AdjacencyList(kind: kind, edges: edges)
+    }
+    
+    // MARK: - isReachable(_:source:) tests
+    func testIsReachableSource_whenGraphHasNoEdges() {
+        whenGraphHasNoEdges(kind: .directed)
+        for source in 0..<sut.vertexCount {
+            for destination in 0..<sut.vertexCount where source != destination {
+                XCTAssertFalse(sut.isReachable(destination, from: source))
+            }
+            XCTAssertTrue(sut.isReachable(source, from: source))
+        }
+        
+        whenGraphHasNoEdges(kind: .undirected)
+        for source in 0..<sut.vertexCount {
+            for destination in 0..<sut.vertexCount where source != destination {
+                XCTAssertFalse(sut.isReachable(destination, from: source))
+            }
+            XCTAssertTrue(sut.isReachable(source, from: source))
+        }
+    }
+    
+    func testIsReachableSource_whenGraphHasEdges() {
+        whenGraphHasEdges(kind: .directed)
+        var visited = Set<Int>()
+        for source in 0..<sut.vertexCount {
+            visited = sut.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: source, { _ in })
+            for destination in 0..<sut.vertexCount where source != destination {
+                XCTAssertEqual(sut.isReachable(destination, from: source), visited.contains(destination))
+            }
+        }
+        
+        whenGraphHasEdges(kind: .undirected)
+        for source in 0..<sut.vertexCount {
+            visited = sut.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: source, { _ in })
+            for destination in 0..<sut.vertexCount where source != destination {
+                XCTAssertEqual(sut.isReachable(destination, from: source), visited.contains(destination))
+            }
+        }
+    }
+    
+    // MARK: - isReachable(_:sources:) tests
+    func testIsReachableSources_whenGraphHasNoEdges() {
+        whenGraphHasNoEdges(kind: .directed)
+        var sources = givenRandomSources
+        for destination in 0..<sut.vertexCount where !sources.contains(destination) {
+            XCTAssertFalse(sut.isReachable(destination, from: sources))
+        }
+        for destination in sources {
+            XCTAssertTrue(sut.isReachable(destination, from: sources))
+        }
+        
+        whenGraphHasNoEdges(kind: .undirected)
+        sources = givenRandomSources
+        for destination in 0..<sut.vertexCount where !sources.contains(destination) {
+            XCTAssertFalse(sut.isReachable(destination, from: sources))
+        }
+        for destination in sources {
+            XCTAssertTrue(sut.isReachable(destination, from: sources))
+        }
+    }
+    
+    func testIsReachableSources_whenGraphHasEdges() {
+        whenGraphHasEdges(kind: .directed)
+        var sources = givenRandomSources
+        var visited = Set<Int>()
+        for source in sources {
+            visited.formUnion(sut.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: source, {_ in }))
+        }
+        for destination in 0..<sut.vertexCount {
+            XCTAssertEqual(sut.isReachable(destination, from: sources), visited.contains(destination))
+        }
+        
+        whenGraphHasEdges(kind: .undirected)
+        sources = givenRandomSources
+        visited = []
+        for source in sources {
+            visited.formUnion(sut.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: source, {_ in }))
+        }
+        for destination in 0..<sut.vertexCount {
+            XCTAssertEqual(sut.isReachable(destination, from: sources), visited.contains(destination))
         }
     }
     

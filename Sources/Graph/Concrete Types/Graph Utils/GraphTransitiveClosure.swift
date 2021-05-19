@@ -89,7 +89,7 @@ public final class GraphTransitiveClosure<G: Graph> {
             return cached.contains(destination)
         }
         
-        let visited = graph.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: source, { _ in})
+        let visited = graph.visitedVertices(adopting: .DeepFirstSearch, reachableFrom: source, { _ in })
         defer {
             _memoizedVisited.setObject(visited as NSSet, forKey: source as NSNumber)
         }

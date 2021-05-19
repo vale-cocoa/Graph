@@ -288,6 +288,13 @@ To create a new `GraphReachbality` instance use the initalizer `init(graph:sourc
 This utility offers only one query: `isReachableFromSources(_:)` method, which takes a vertex in the queried graph and returns a boolean value: `true` when in the queried graph it is possible to reach such given destination vertex from the queried source vertices, otherwise `false`.
 The internal data of this utility is calculated lazily the first time a query is made; that is after the first query is made, any subsequent query will take O(1) complexity to complete.
 
+Moreover `Graph` protocol provides two default implemented methods which serve the same purpose of the `GraphReachablity` utility:
+* `isReachable(_:source:)`
+* `isReachable(_:sources:)`
+
+Note that these two methods take O(*V* + *E*) complexity for every query, even when the source/sources parameter is used subsequentially more times. 
+Thus it's recommended to use `GraphReachablity` utility when is clear that the same graph and source/sources vertices are gonna be queried for reachability more times.
+
 ### `GraphStronglyConnectedComponents`
 This utility provides functionalities for querying a graph's strongly connected components. 
 It can be used with graph with both kind of vertices connections, directed or undirected.

@@ -108,4 +108,21 @@ final class GraphTCTests: XCTestCase {
         }
     }
     
+    func testReachability_memoization() {
+        whenGraphHasEdges(kind: .directed)
+        var results = Array<Set<Int>>(repeating: [], count: sut.graph.vertexCount)
+        for source in 0..<sut.graph.vertexCount {
+            for destination in 0..<sut.graph.vertexCount {
+                guard sut.reachability(from: source, to: destination) else { continue }
+                
+                results[source].insert(destination)
+            }
+        }
+        for source in 0..<sut.graph.vertexCount {
+            for destination in 0..<sut.graph.vertexCount {
+                XCTAssertEqual(sut.reachability(from: source, to: destination), results[source].contains(destination))
+            }
+        }
+    }
+    
 }
