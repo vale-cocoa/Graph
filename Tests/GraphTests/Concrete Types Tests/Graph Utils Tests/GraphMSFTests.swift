@@ -263,6 +263,8 @@ final class GraphMSFTests: XCTestCase {
                     XCTAssertNil(weight)
                 }
             }
+            // We also test for connected components ids matching indices of msf:
+            assertMSFIndicesAreSameValuesOfConnectedComponents()
         }
     }
     
@@ -306,7 +308,7 @@ final class GraphMSFTests: XCTestCase {
             let thisAlgResult = results[alg]!
             for otherAlg in results.keys where otherAlg != alg {
                 let otherAlgResult = results[otherAlg]!
-                _assertEqualResults(lhs: thisAlgResult, rhs: otherAlgResult)
+                assertEqualResults(lhs: thisAlgResult, rhs: otherAlgResult)
             }
         }
     }
@@ -407,85 +409,120 @@ final class GraphMSFTests: XCTestCase {
         assertContainsSameUndirectedWeightedEdges(lhs: sut.msf?.first, rhs: expectedMST)
     }
     
-}
-
-fileprivate func _assertEqualResults(lhs: (msf: [[WeightedEdge<Double>]]?, weights: [Double?]?), rhs: (msf: [[WeightedEdge<Double>]]?, weights: [Double?]?), file: StaticString = #file, line: UInt = #line) {
-    if let lMSF = lhs.msf {
-        guard
-            let rMSF = rhs.msf
-        else {
-            XCTFail("\(lMSF) is not equal to nil", file: file, line: line)
+    // MARK: - Helpers
+    fileprivate func assertEqualResults(lhs: (msf: [[WeightedEdge<Double>]]?, weights: [Double?]?), rhs: (msf: [[WeightedEdge<Double>]]?, weights: [Double?]?), file: StaticString = #file, line: UInt = #line) {
+        if let lMSF = lhs.msf {
+            guard
+                let rMSF = rhs.msf
+            else {
+                XCTFail("\(lMSF) is not equal to nil", file: file, line: line)
+                
+                return
+            }
             
-            return
+            guard
+                lMSF.count == rMSF.count
+            else {
+                XCTFail("\(lMSF) is not equal to \(rMSF)", file: file, line: line)
+                
+                return
+            }
+            
+            for (lMST, rMST) in zip(lMSF, rMSF) {
+                assertContainsSameUndirectedWeightedEdges(lhs: lMST, rhs: rMST, file: file, line: line)
+            }
+        } else {
+            guard
+                rhs.msf == nil
+            else {
+                XCTFail("nil is not equal to \(rhs.msf!)", file: file, line: line)
+                
+                return
+            }
         }
         
-        guard
-            lMSF.count == rMSF.count
-        else {
-            XCTFail("\(lMSF) is not equal to \(rMSF)", file: file, line: line)
+        if let lWeights = lhs.weights {
+            guard
+                let rWeights = rhs.weights
+            else {
+                XCTFail("\(lWeights) is not equal to nil", file: file, line: line)
+                
+                return
+            }
             
-            return
-        }
-        
-        for (lMST, rMST) in zip(lMSF, rMSF) {
-            assertContainsSameUndirectedWeightedEdges(lhs: lMST, rhs: rMST, file: file, line: line)
-        }
-    } else {
-        guard
-            rhs.msf == nil
-        else {
-            XCTFail("nil is not equal to \(rhs.msf!)", file: file, line: line)
+            guard
+                lWeights.count == rWeights.count
+            else {
+                XCTFail("\(lWeights) is not equal to \(rWeights)", file: file, line: line)
+                
+                return
+            }
             
-            return
+            for (lW, rW) in zip(lWeights, rWeights) {
+                if let lW = lW {
+                    guard
+                        let rW = rW
+                    else {
+                        XCTFail("\(lWeights) is not equal to \(rWeights)", file: file, line: line)
+                        
+                        return
+                    }
+                    
+                    XCTAssertEqual(lW, rW, accuracy: 0.00001, file: file, line: line)
+                } else {
+                    guard
+                        rW == nil
+                    else {
+                        XCTFail("\(lWeights) is not equal to \(rWeights)", file: file, line: line)
+                        
+                        return
+                    }
+                }
+            }
+        } else {
+            guard
+                rhs.weights == nil
+            else {
+                XCTFail("nil is not equal to \(rhs.weights!)", file: file, line: line)
+                
+                return
+            }
         }
     }
     
-    if let lWeights = lhs.weights {
+    fileprivate func assertMSFIndicesAreSameValuesOfConnectedComponents(file: StaticString = #file, line: UInt = #line) {
         guard
-            let rWeights = rhs.weights
+            sut.graph.kind == .undirected
+        else { return }
+        
+        let cc = GraphStronglyConnectedComponents(graph: sut.graph)
+        let msf = sut.msf!
+        guard
+            cc.count == msf.count
         else {
-            XCTFail("\(lWeights) is not equal to nil", file: file, line: line)
+            XCTFail(file: file, line: line)
             
             return
         }
         
-        guard
-            lWeights.count == rWeights.count
-        else {
-            XCTFail("\(lWeights) is not equal to \(rWeights)", file: file, line: line)
-            
-            return
-        }
-        
-        for (lW, rW) in zip(lWeights, rWeights) {
-            if let lW = lW {
+        for id in msf.indices {
+            let mst = msf[id]
+            let component = cc.stronglyConnectedComponent(with: id)
+            for edge in mst {
+                let vertex = edge.either
+                let otherVertex = edge.other(vertex)
                 guard
-                    let rW = rW
+                    component.contains(vertex),
+                    component.contains(otherVertex)
                 else {
-                    XCTFail("\(lWeights) is not equal to \(rWeights)", file: file, line: line)
-                    
-                    return
-                }
-                
-                XCTAssertEqual(lW, rW, accuracy: 0.00001, file: file, line: line)
-            } else {
-                guard
-                    rW == nil
-                else {
-                    XCTFail("\(lWeights) is not equal to \(rWeights)", file: file, line: line)
+                    XCTFail(file: file, line: line)
                     
                     return
                 }
             }
         }
-    } else {
-        guard
-            rhs.weights == nil
-        else {
-            XCTFail("nil is not equal to \(rhs.weights!)", file: file, line: line)
-            
-            return
-        }
     }
     
 }
+
+

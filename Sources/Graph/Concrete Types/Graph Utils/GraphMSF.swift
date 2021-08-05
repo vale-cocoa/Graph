@@ -30,27 +30,50 @@ import PriorityQueue
 import IndexedPriorityQueue
 import UnionFind
 
-/// A utility to query a weighted graph for its minimum spanning forest.
+/// A utility to query a weighted undirected graph for its minimum spanning forest.
 ///
 /// Since a graph can contain a huge number of vertices and edges, this utility is a stand-alone class type which
 /// gets initialized with the weighted graph to query.
 /// Results for queries are calculated lazily the first time a query is made.
 /// Note that results are valid for the graph state used at initialization time, thus a new instance must be
-/// created to query a mutated graph instance.
+/// created to query a mutated graph instance
 final class GraphMSF<G: Graph> where G.Edge: WeightedGraphEdge {
+    
+    /// The algorithm to use for building up the minimum sparring forest of the queried graph.
+    ///
+    /// - Todo: Perhaps also add Chazelle algorithm.
     public enum Algorithm: CaseIterable {
+        /// Lazy version of Prim's algorithm to build the minimum spanning tree of a graph connected component.
+        ///
+        /// - Complexity: *E log(V)* where *E* is the count of edges and *V* is the count
+        ///                 of vertices of the queried graph.
         case primLazyAlgorithm
         
+        /// Eager version of Prim's algorithm to build the minimum spanning tree of a graph connected component.
+        ///
+        /// - Complexity: *E log(E)* where *E* is the count of edges of the queried graph.
         case primEagerAlgorithm
         
+        /// Kruskal's algorithm to build the minimum spanning tree of a graph connected component.
+        ///
+        /// - Complexity: *E log(E)* where *E* is the count of edges of the queried graph.
         case kruskalAlgorithm
         
     }
     
+    /// The graph to query.
     public let graph: G
     
+    /// The algorithm to use for building up the minimum sparring forest of the queried graph.
     public let algorithm: Algorithm
     
+    /// The minimum sparring forest of the queried graph, `nil` when the queried graph is of type `.directed`.
+    ///
+    /// Each element of this array is the minimum spanning tree for a connected component of the queried graph.
+    /// Such minimum spaning tree is represented via an array of edges of the queried graph.
+    /// - Complexity: Refer to the algorithm in use by the `GraphMSF` instance.
+    /// - Note: Indices values of this array correspond to `id` values of the connected components
+    ///         of the queried graph.
     public fileprivate(set) lazy var msf: Array<Array<G.Edge>>? = {
         let data = _buildMSFAndWeights()
         defer {
@@ -60,6 +83,15 @@ final class GraphMSF<G: Graph> where G.Edge: WeightedGraphEdge {
         return data?.msf
     }()
     
+    /// The weights of each connected component's minium spanning tree in the queried graph, `nil`
+    /// when the queried graph is of type `.directed`.
+    ///
+    /// Each element of this array is the weight of the minimum spanning tree for a connected component
+    /// of the queried graph. Such weight is `nil` when the connected component is formed by just one
+    /// vertex, hence corresponding to an empty minimum spanning tree.
+    /// - Complexity: Refer to the algorithm in use by the `GraphMSF` instance.
+    /// - Note: Indices values of this array correspond to `id` values of the connected components
+    ///         of the queried graph.
     public fileprivate(set) lazy var weights: Array<G.Edge.Weight?>? = {
         let data = _buildMSFAndWeights()
         defer {
@@ -69,6 +101,14 @@ final class GraphMSF<G: Graph> where G.Edge: WeightedGraphEdge {
         return data?.weights
     }()
     
+    /// Returns a new instance of `GraphMSF` initalized with the given graph and to adopt given algorithm for building
+    /// the minimum spanning tree of each connected component of the queried graph.
+    ///
+    /// - Parameter graph: Some `Graph` instance.
+    /// - Parameter algorithm:  The algorithm adopted by this instance of `GraphMSF` to build each
+    ///                         minimum spanning tree of the queried graph connected components.
+    /// - Returns: A new `GraphMSF` instance to query the given graph adopting the given algorithm.
+    /// - Complexity: O(1).
     public init(graph: G, adopting algorithm: Algorithm) {
         self.graph = graph
         self.algorithm = algorithm
