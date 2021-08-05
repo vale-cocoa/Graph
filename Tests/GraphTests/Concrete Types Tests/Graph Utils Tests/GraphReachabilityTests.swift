@@ -39,6 +39,12 @@ final class GraphReachabilityTests: XCTestCase {
         sut = GraphReachability(graph: graph, sources: Set(sources))
     }
     
+    override func tearDown() {
+        sut = nil
+        
+        super.tearDown()
+    }
+    
     // MARK: - Given
     func givenGraphWithNoEdges(kind: GraphConnections) -> AdjacencyList<WeightedEdge<Double>> {
         let vertexCount = Int.random(in: 10..<100)

@@ -76,7 +76,7 @@ extension Graph {
     }
     
     /// Executes given `body` closure on every edge representing an adjacency found
-    /// while traversing the graph adopting the given `traversal` methdology,
+    /// while traversing the graph adopting the given `traversal` methodology,
     /// starting from the given `source` vertex, and finally returnig a set containing every
     /// vertex visited during the traversal (`source` included).
     ///
@@ -136,7 +136,7 @@ extension Graph {
     }
     
     /// Traverses the graph adopting the given `traverse` methodology,
-    /// starting from the given `source`vertex  and executing the given `body` closure
+    /// starting from the given `source` vertex  and executing the given `body` closure
     /// on each vertex found (including `source`), finally returning a set containing all vertices visited.
     ///
     /// - Parameters:

@@ -85,7 +85,7 @@ let negativeVertexCountAdjacencyListData: Data = {
 }()
 
 // MARK: - GIVEN
-var givenTwoRandomAndDistinctVertices: (v: Int, w: Int ) { (Int.random(in: 0..<10), Int.random(in: 10..<20)) }
+var givenTwoRandomAndDistinctVertices: (v: Int, w: Int ) { (Int.random(in: 0..<10), Int.random(in: 10..<100)) }
 
 func givenRandomWeightedEdges(minimumVertexCount: Int = 10) -> [WeightedEdge<Double>] {
     let countOfVertex = Int.random(in: minimumVertexCount..<100)
@@ -256,7 +256,7 @@ func assertAreEquivalent<T: Graph, V: Graph>(lhs: T, rhs: V, message: String = "
     guard
         lhs.kind == rhs.kind
     else {
-        XCTFail("Different kind values lhs: \(lhs.kind), rhs: \(rhs.kind) - \(message)")
+        XCTFail("Different kind values lhs: \(lhs.kind), rhs: \(rhs.kind) - \(message)", file: file, line: line)
         
         return
     }
@@ -264,7 +264,7 @@ func assertAreEquivalent<T: Graph, V: Graph>(lhs: T, rhs: V, message: String = "
     guard
         lhs.vertexCount == rhs.vertexCount
     else {
-        XCTFail("Different vertexCount values lhs: \(lhs.vertexCount), rhs: \(rhs.vertexCount) - \(message)")
+        XCTFail("Different vertexCount values lhs: \(lhs.vertexCount), rhs: \(rhs.vertexCount) - \(message)", file: file, line: line)
         
         return
     }
@@ -272,7 +272,7 @@ func assertAreEquivalent<T: Graph, V: Graph>(lhs: T, rhs: V, message: String = "
     guard
         lhs.edgeCount == rhs.edgeCount
     else {
-        XCTFail("Different edgeCount values lhs: \(lhs.edgeCount), rhs: \(rhs.edgeCount) - \(message)")
+        XCTFail("Different edgeCount values lhs: \(lhs.edgeCount), rhs: \(rhs.edgeCount) - \(message)", file: file, line: line)
         
         return
     }
@@ -283,7 +283,7 @@ func assertAreEquivalent<T: Graph, V: Graph>(lhs: T, rhs: V, message: String = "
         guard
             lhsEdges.count == rhsEdges.count
         else {
-            XCTFail("Different adjacencies at vertex: \(vertex) - \(message)")
+            XCTFail("Different adjacencies at vertex: \(vertex) - \(message)", file: file, line: line)
             
             return
         }
@@ -292,18 +292,49 @@ func assertAreEquivalent<T: Graph, V: Graph>(lhs: T, rhs: V, message: String = "
             guard
                 let idx = rhsEdges.firstIndex(of: edge)
             else {
-                XCTFail("Different adjacencies at vertex: \(vertex) - \(message)")
+                XCTFail("Different adjacencies at vertex: \(vertex) - \(message)", file: file, line: line)
                 
                 return
             }
             
             rhsEdges.remove(at: idx)
         }
+        
         guard rhsEdges.isEmpty else {
             
-            XCTFail("Different adjacencies at vertex: \(vertex) - \(message)")
+            XCTFail("Different adjacencies at vertex: \(vertex) - \(message)", file: file, line: line)
             
             return
+        }
+    }
+}
+
+func assertContainsSameUndirectedWeightedEdges<W: WeightedGraphEdge>(lhs: Array<W>?, rhs: Array<W>?, file: StaticString = #file, line: UInt = #line) {
+    switch (lhs, rhs) {
+    case (nil, nil):
+        return
+    case (nil, .some):
+        fallthrough
+    case (.some, nil):
+        XCTFail("\(lhs!) is not equal to nil", file: file, line: line)
+        return
+    case (.some(let l), .some(let r)):
+        guard
+            l.count == r.count
+        else {
+            XCTFail("\(l) is not equal to \(r)", file: file, line: line)
+            return
+        }
+        
+        let lSorted = l.sorted(by: { $0.weight < $1.weight })
+        let rSorted = r.sorted(by: { $0.weight < $1.weight })
+        for (lEdge, rEdge) in zip(lSorted, rSorted) {
+            guard
+                lEdge <=~=> rEdge
+            else {
+                XCTFail("\(l) is not equal to \(r)", file: file, line: line)
+                return
+            }
         }
     }
 }
