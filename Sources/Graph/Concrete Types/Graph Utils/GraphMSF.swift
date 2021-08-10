@@ -45,18 +45,18 @@ final class GraphMSF<G: Graph> where G.Edge: WeightedGraphEdge {
     public enum Algorithm: CaseIterable {
         /// Lazy version of Prim's algorithm to build the minimum spanning tree of a graph connected component.
         ///
-        /// - Complexity: *E log(V)* where *E* is the count of edges and *V* is the count
+        /// - Complexity: O(*E* log *V*) where *E* is the count of edges and *V* is the count
         ///                 of vertices of the queried graph.
         case primLazyAlgorithm
         
         /// Eager version of Prim's algorithm to build the minimum spanning tree of a graph connected component.
         ///
-        /// - Complexity: *E log(E)* where *E* is the count of edges of the queried graph.
+        /// - Complexity: O(*E * log *E*) where *E* is the count of edges of the queried graph.
         case primEagerAlgorithm
         
         /// Kruskal's algorithm to build the minimum spanning tree of a graph connected component.
         ///
-        /// - Complexity: *E log(E)* where *E* is the count of edges of the queried graph.
+        /// - Complexity: O(*E* log *E*) where *E* is the count of edges of the queried graph.
         case kruskalAlgorithm
         
     }

@@ -43,12 +43,12 @@ public final class GraphCycle<G: Graph> {
     ///                 queried for the first time, where *V* is the count of vertices of the queried graph,
     ///                 and *E* is the number of edges in the queried graph.
     public private(set) lazy var cycle: Array<Int> = {
-        let data = _buildData()
+        let (_cycle, _topologicalSort) = _buildCycleAndTopologicalSort()
         defer {
-            topologicalSort = data.topologicalSort
+            topologicalSort = _topologicalSort
         }
         
-        return data.cycle
+        return _cycle
     }()
     
     /// Returns an array of vertices as topological sort of the queried graph, when such graph is
@@ -58,12 +58,12 @@ public final class GraphCycle<G: Graph> {
     ///                 queried for the first time, where *V* is the count of vertices of the queried graph,
     ///                 and *E* is the number of edges in the queried graph.
     public private(set) lazy var topologicalSort: Array<Int>? = {
-        let data = _buildData()
+        let (_cycle, _topologicalSort) = _buildCycleAndTopologicalSort()
         defer {
-            cycle = data.cycle
+            cycle = _cycle
         }
         
-        return data.topologicalSort
+        return _topologicalSort
     }()
     
     /// A boolean value, true when the queried graph has a cycle, false otherwise.
@@ -83,7 +83,7 @@ public final class GraphCycle<G: Graph> {
         self.graph = graph
     }
     
-    private func _buildData() -> (cycle: Array<Int>, topologicalSort: Array<Int>?) {
+    private func _buildCycleAndTopologicalSort() -> (cycle: Array<Int>, topologicalSort: Array<Int>?) {
         var visited = Set<Int>()
         var cycleStack: Array<Int> = []
         var edgeTo = Array<Int?>(repeating: nil, count: graph.vertexCount)

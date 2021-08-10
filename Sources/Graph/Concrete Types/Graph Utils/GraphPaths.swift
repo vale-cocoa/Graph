@@ -44,21 +44,21 @@ public final class GraphPaths< G: Graph> {
     public let traversal: GraphTraversal
     
     private lazy var _visited: Set<Int> = {
-        let data = _buildData()
+        let (visited, edgeTo) = _buildVisitedAndEdgeTo()
         defer {
-            _edgeTo = data.edgeTo
+            _edgeTo = edgeTo
         }
         
-        return data.visited
+        return visited
     }()
     
     private lazy var _edgeTo: Array<Int?> = {
-        let data = _buildData()
+        let (visited, edgeTo) = _buildVisitedAndEdgeTo()
         defer {
-            _visited = data.visited
+            _visited = visited
         }
         
-        return data.edgeTo
+        return edgeTo
     }()
     
     private let _memoizedPaths = NSCache<NSNumber, NSArray>()
@@ -67,7 +67,7 @@ public final class GraphPaths< G: Graph> {
     /// graph traversal values.
     ///
     /// - Parameter graph: Some `Graph` instance, **must have vertexCount value grater than 0**.
-    /// - Parameter source: A vertex, **must be include in given graph**.
+    /// - Parameter source: A vertex, **must be included in given graph**.
     /// - Parameter traversal:  A `GraphTraversal` value, paths from given `source` vertex will
     ///                         be built traversing the given `graph` adopting the specified value for
     ///                         this parameter.
@@ -134,7 +134,7 @@ public final class GraphPaths< G: Graph> {
         return path
     }
     
-    private func _buildData() -> (visited: Set<Int>, edgeTo: Array<Int?>) {
+    private func _buildVisitedAndEdgeTo() -> (visited: Set<Int>, edgeTo: Array<Int?>) {
         var edgeTo = Array<Int?>(repeating: nil, count: graph.vertexCount)
         var visited: Set<Int> = []
         let body: (Int, G.Edge) -> Void = { vertex, edge in

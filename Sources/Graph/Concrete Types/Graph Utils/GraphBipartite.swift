@@ -42,12 +42,12 @@ public final class GraphBipartite<G: Graph> {
     ///                 queried for the first time, where *V* is the count of vertices of the queried graph,
     ///                 and *E* is the number of edges in the queried graph.
     public private(set) lazy var isBiPartite: Bool = {
-        let data = _buildData()
+        let (_isBipartite, _hasColor) = _buildIsBipartiteAndHasColor()
         defer {
-            hasColor = data.colored
+            hasColor = _hasColor
         }
         
-        return data.isBipartite
+        return _isBipartite
     }()
     
     /// The number of vertices which have been colored during the calculation of the `isBipartite` value.
@@ -71,12 +71,12 @@ public final class GraphBipartite<G: Graph> {
     }()
     
     private lazy var hasColor: Array<Bool> = {
-        let data = _buildData()
+        let (_isBipartite, _hasColor) = _buildIsBipartiteAndHasColor()
         defer {
-            isBiPartite = data.isBipartite
+            isBiPartite = _isBipartite
         }
         
-        return data.colored
+        return _hasColor
     }()
     
     /// Returns a new instance of `GraphBipartite` initalized with the given graph.
@@ -103,7 +103,7 @@ public final class GraphBipartite<G: Graph> {
         return hasColor[vertex]
     }
     
-    private func _buildData() -> (isBipartite: Bool, colored: Array<Bool>) {
+    private func _buildIsBipartiteAndHasColor() -> (isBipartite: Bool, colored: Array<Bool>) {
         var colored = Array<Bool>(repeating: false, count: graph.vertexCount)
         var biPartiteResult = true
         guard graph.edgeCount > 0 else { return (biPartiteResult, colored) }

@@ -47,21 +47,21 @@ public final class GraphStronglyConnectedComponents<G: Graph> {
     ///                 queried for the first time, where *V* is the count of vertices of the queried graph,
     ///                 and *E* is the number of edges in the queried graph.
     public private(set) lazy var count: Int = {
-        let data = _buildData()
+        let (ids, _count) = _buildIDsAndCount()
         defer {
-            _ids = data.ids
+            _ids = ids
         }
         
-        return data.count
+        return _count
     }()
     
     private lazy var _ids: Array<Int> = {
-        let data = _buildData()
+        let (ids, _count) = _buildIDsAndCount()
         defer {
-            count = data.count
+            count = _count
         }
         
-        return data.ids
+        return ids
     }()
     
     private let _memoizedSCC = NSCache<NSNumber, NSArray>()
@@ -154,7 +154,7 @@ public final class GraphStronglyConnectedComponents<G: Graph> {
         return stronglyConnectedComponent(with: vertexId)
     }
     
-    private func _buildData() -> (ids: Array<Int>, count: Int) {
+    private func _buildIDsAndCount() -> (ids: Array<Int>, count: Int) {
         var ids = Array<Int>(repeating: graph.vertexCount, count: graph.vertexCount)
         var currentID = 0
         var visited = Set<Int>()
