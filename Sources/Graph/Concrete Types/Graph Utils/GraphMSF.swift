@@ -37,7 +37,7 @@ import UnionFind
 /// Results for queries are calculated lazily the first time a query is made.
 /// Note that results are valid for the graph state used at initialization time, thus a new instance must be
 /// created to query a mutated graph instance
-final class GraphMSF<G: Graph> where G.Edge: WeightedGraphEdge {
+public final class GraphMSF<G: Graph> where G.Edge: WeightedGraphEdge {
     
     /// The algorithm to use for building up the minimum sparring forest of the queried graph.
     ///

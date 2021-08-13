@@ -127,6 +127,76 @@ func givenEdgesConnectedOneToEachOtherAscending(vertexCount: Int = Int.random(in
     return edges
 }
 
+func givenTinyEWDAG() -> AdjacencyList<WeightedEdge<Double>> {
+    // Set the graph to be acyclic digraph from the book Algorithms 4th edition p.658
+    // with non-negative edges (tinyEWDAG.txt)
+    var edges = Array<WeightedEdge<Double>>()
+    
+    edges.append(WeightedEdge(tail: 5, head: 4, weight: 0.35))
+    edges.append(WeightedEdge(tail: 4, head: 7, weight: 0.37))
+    edges.append(WeightedEdge(tail: 5, head: 7, weight: 0.28))
+    edges.append(WeightedEdge(tail: 5, head: 1, weight: 0.32))
+    edges.append(WeightedEdge(tail: 4, head: 0, weight: 0.38))
+    edges.append(WeightedEdge(tail: 0, head: 2, weight: 0.26))
+    edges.append(WeightedEdge(tail: 3, head: 7, weight: 0.39))
+    edges.append(WeightedEdge(tail: 1, head: 3, weight: 0.29))
+    edges.append(WeightedEdge(tail: 7, head: 2, weight: 0.34))
+    edges.append(WeightedEdge(tail: 6, head: 2, weight: 0.40))
+    edges.append(WeightedEdge(tail: 3, head: 6, weight: 0.52))
+    edges.append(WeightedEdge(tail: 6, head: 0, weight: 0.58))
+    edges.append(WeightedEdge(tail: 6, head: 4, weight: 0.93))
+    
+    return AdjacencyList(kind: .directed, edges: edges)
+}
+
+func givenTinyEWDn() -> AdjacencyList<WeightedEdge<Double>> {
+    // Set the graph to be acyclic digraph with some negative weights
+    // from the book Algorithms 4th edition p.676 (tinyEWDn.txt)
+    var edges = Array<WeightedEdge<Double>>()
+    
+    edges.append(WeightedEdge(tail: 4, head: 5, weight: 0.35))
+    edges.append(WeightedEdge(tail: 5, head: 4, weight: 0.35))
+    edges.append(WeightedEdge(tail: 4, head: 7, weight: 0.37))
+    edges.append(WeightedEdge(tail: 5, head: 7, weight: 0.28))
+    edges.append(WeightedEdge(tail: 7, head: 5, weight: 0.28))
+    edges.append(WeightedEdge(tail: 5, head: 1, weight: 0.32))
+    edges.append(WeightedEdge(tail: 0, head: 4, weight: 0.38))
+    edges.append(WeightedEdge(tail: 0, head: 2, weight: 0.26))
+    edges.append(WeightedEdge(tail: 7, head: 3, weight: 0.39))
+    edges.append(WeightedEdge(tail: 1, head: 3, weight: 0.29))
+    edges.append(WeightedEdge(tail: 2, head: 7, weight: 0.34))
+    edges.append(WeightedEdge(tail: 6, head: 2, weight: -1.20))
+    edges.append(WeightedEdge(tail: 3, head: 6, weight: 0.52))
+    edges.append(WeightedEdge(tail: 6, head: 0, weight: -1.40))
+    edges.append(WeightedEdge(tail: 6, head: 4, weight: -1.25))
+    
+    return AdjacencyList(kind: .directed, edges: edges)
+}
+
+func givenTinyEWDnc() -> AdjacencyList<WeightedEdge<Double>> {
+    // Set the graph to be a digraph with a negative cycle.
+    // Same from Algorithms 4th edition p.678 tinyEWDnc.txt
+    var edges = Array<WeightedEdge<Double>>()
+    
+    edges.append(WeightedEdge(tail: 4, head: 5, weight: 0.35))
+    edges.append(WeightedEdge(tail: 5, head: 4, weight: -0.66))
+    edges.append(WeightedEdge(tail: 4, head: 7, weight: 0.37))
+    edges.append(WeightedEdge(tail: 5, head: 7, weight: 0.28))
+    edges.append(WeightedEdge(tail: 7, head: 5, weight: 0.28))
+    edges.append(WeightedEdge(tail: 5, head: 1, weight: 0.32))
+    edges.append(WeightedEdge(tail: 0, head: 4, weight: 0.38))
+    edges.append(WeightedEdge(tail: 0, head: 2, weight: 0.26))
+    edges.append(WeightedEdge(tail: 7, head: 3, weight: 0.39))
+    edges.append(WeightedEdge(tail: 1, head: 3, weight: 0.29))
+    edges.append(WeightedEdge(tail: 2, head: 7, weight: 0.34))
+    edges.append(WeightedEdge(tail: 6, head: 2, weight: 0.40))
+    edges.append(WeightedEdge(tail: 3, head: 6, weight: 0.52))
+    edges.append(WeightedEdge(tail: 6, head: 0, weight: 0.58))
+    edges.append(WeightedEdge(tail: 6, head: 4, weight: 0.93))
+    
+    return AdjacencyList(kind: .directed, edges: edges)
+}
+
 // MARK: - Concrete type conforming to GraphEdge for tests
 struct DummyGraphEdge: GraphEdge {
     let _v: Int
