@@ -25,7 +25,6 @@
 //  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import Foundation
-import Deque
 
 /// A utility to query a weighted graph for the shortest paths from a source vertex to other vertices.
 ///
@@ -36,10 +35,16 @@ import Deque
 /// created to query a mutated graph instance.
 /// - Note: This utility adopts an algorithm leveraging on the topological sort of a directed graph;
 ///         therefore complexity of first query should be in the magnitude of O(?).
+/// - Important:    `GraphAcyclicSP` new instances can only be instanciated and obtained
+///                 by querying a `GraphCycle` utility instance via its `shortestsPaths(from:)`
+///                 method. Such instance method only returns a valid `GraphAcyclicSP` instance
+///                 if its queried graph is an edge weighted directed acyclic graph.
 public final class GraphAcyclicSP<G: Graph> where G.Edge: WeightedGraphEdge {
-    public let source: Int
-    
+    /// The graph to query.
     public let graph: G
+    
+    /// The source vertex to query.
+    public let source: Int
     
     fileprivate let _topologicalSort: Array<Int>
     
@@ -103,7 +108,7 @@ extension GraphAcyclicSP {
     public func hasPath(to vertex: Int) -> Bool {
         precondition(0..<graph.vertexCount ~= vertex, "Destination vertex must be in graph.")
         
-        return _edgeTo.withUnsafeBufferPointer({ $0[vertex] }) != nil
+        return _weightTo.withUnsafeBufferPointer({ $0[vertex] }) != nil
     }
     
     /// Returns a sequence of edges representing the shortest path in the queried graph
@@ -129,7 +134,7 @@ extension GraphAcyclicSP {
         } else {
             var reversedPath = Array<G.Edge>()
             var from = vertex
-            while let edge = _edgeTo[from] {
+            while let edge = _edgeTo.withUnsafeBufferPointer({ $0[from] }) {
                 reversedPath.append(edge)
                 from = edge.other(from)
             }
@@ -149,6 +154,7 @@ extension GraphAcyclicSP {
     fileprivate func _buildShortestPaths() -> (edgeTo: Array<G.Edge?>, weightTo: Array<G.Edge.Weight?>) {
         var edgeTo = Array<G.Edge?>(repeating: nil, count: graph.vertexCount)
         var weightTo = Array<G.Edge.Weight?>(repeating: nil, count: graph.vertexCount)
+        weightTo[source] = .zero
         guard
             graph.edgeCount > 0
         else {
@@ -166,7 +172,6 @@ extension GraphAcyclicSP {
                 }
             }
         }
-        weightTo[source] = .zero
         for v in _topologicalSort {
             relax(v)
         }
@@ -190,6 +195,7 @@ extension GraphCycle where G.Edge: WeightedGraphEdge {
     ///                 where *V* is the count of vertices and *E* is count of edges of the queried graph.
     public func shortestsPaths(from source: Int) -> GraphAcyclicSP<G>? {
         precondition((0..<graph.vertexCount) ~= source, "source vertex must be in queried graph.")
+        
         return GraphAcyclicSP(self, source: source)
     }
     

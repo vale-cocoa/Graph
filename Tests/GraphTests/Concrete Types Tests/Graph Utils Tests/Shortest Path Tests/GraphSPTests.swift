@@ -87,20 +87,24 @@ final class GraphSPTests: XCTestCase {
     }
     
     // MARK: - weight(to:) tests
-    func testWeightTo_whenGraphHasNoEdges_thenReturnsNilForAnyDestinationVertex() {
+    func testWeightTo_whenGraphHasNoEdges_thenReturnsNilForAnyDestinationVertexDifferentFromSource() {
         whenGraphHasNoEdges()
-        for destination in 0..<sut.graph.vertexCount {
+        for destination in 0..<sut.graph.vertexCount where destination != sut.source {
             XCTAssertNil(sut.weight(to: destination))
         }
     }
     
-    func testWeightTo_whenGraphHasEdgesAndDestinationIsEqualToSource_thenReturnsZero() {
+    func testWeightTo_whenDestinationIsEqualToSource_thenReturnsZero() {
+        whenGraphHasNoEdges()
+        var destination = sut.source
+        XCTAssertEqual(sut.weight(to: destination), Double.zero)
+        
         whenGraphHasEdges()
-        let destination = sut.source
+        destination = sut.source
         XCTAssertEqual(sut.weight(to: destination), Double.zero)
     }
     
-    func testWeightTo_whenGraphHasEdgesAndDestinationIsDifferentThanSource_thenReturnsNilWhenThereIsNoPathOrSumOfWeightsOfEdgesOnPath() {
+    func testWeightTo_whenGraphHasEdgesAndDestinationIsDifferentThanSource_thenReturnsNilIfThereIsNoPathOtherwiseTotalWeightOfPath() {
         whenGraphHasEdges()
         for destination in 0..<sut.graph.vertexCount where destination != sut.source {
             let expectedResult: Double? = sut.path(to: destination)
@@ -116,17 +120,29 @@ final class GraphSPTests: XCTestCase {
     }
     
     // MARK: - hasPath(to:) tests
-    func testHasPathTo_whenGraphHasNoEdges_thenReturnsFalseForAnyDestinationVertex() {
+    func testHasPathTo_whenGraphHasNoEdges_thenReturnsFalseForAnyDestinationVertexDifferentThanSource() {
         whenGraphHasNoEdges()
-        for destination in 0..<sut.graph.vertexCount {
+        for destination in 0..<sut.graph.vertexCount where destination != sut.source {
             XCTAssertFalse(sut.hasPath(to: destination))
         }
     }
     
-    func testHasPathTo_whenGraphHasEdgesAndDestinationIsEqualToSource_thenReturnsFalse() {
+    func testHasPathTo_whenDestinationIsEqualToSource_thenReturnsTrue() {
+        whenGraphHasNoEdges()
+        var destination = sut.source
+        XCTAssertTrue(sut.hasPath(to: destination))
+        
         whenGraphHasEdges()
-        let destination = sut.source
-        XCTAssertFalse(sut.hasPath(to: destination))
+        destination = sut.source
+        XCTAssertTrue(sut.hasPath(to: destination))
+    }
+    
+    func testHasPathTo_whenGraphHasEdges_thenReturnsTrueIfDestinationIsReachableFromSourceOtherWiseFalse() {
+        whenGraphHasEdges()
+        let reachablity = GraphReachability(graph: sut.graph, sources: [sut.source])
+        for destination in 0..<sut.graph.vertexCount {
+            XCTAssertEqual(sut.hasPath(to: destination), reachablity.isReachableFromSources(destination))
+        }
     }
     
     // MARK: - path(to:) tests
@@ -141,13 +157,33 @@ final class GraphSPTests: XCTestCase {
         }
     }
     
-    func testPathTo_whenGraphHasEdgesAndDestinationIsEqualToSource_thenReturnsEmptySequence() {
-        whenGraphHasEdges()
-        let destination = sut.source
-        let path = sut.path(to: destination)
+    func testPathTo_whenDestinationIsEqualToSource_thenReturnsEmptySequence() {
+        whenGraphHasNoEdges()
+        var destination = sut.source
+        var path = sut.path(to: destination)
         for _ in path {
             XCTFail("path is not empty when destination is equal to source.")
             break
+        }
+        
+        whenGraphHasEdges()
+        destination = sut.source
+        path = sut.path(to: destination)
+        for _ in path {
+            XCTFail("path is not empty when destination is equal to source.")
+            break
+        }
+    }
+    
+    func testPathTo_whenDestinationIsDifferentFromSourceAndHasPathToDestinationReturnsTrue_thenReturnsSequenceContainingEdgesFromSourceToDestination() {
+        whenGraphHasEdges()
+        for destination in 0..<sut.graph.vertexCount where destination != sut.source && sut.hasPath(to: destination) == true {
+            let path = sut.path(to: destination)
+            var pathDest = sut.source
+            for edge in path {
+                pathDest = edge.other(pathDest)
+            }
+            XCTAssertEqual(pathDest, destination)
         }
     }
     

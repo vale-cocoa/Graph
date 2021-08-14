@@ -33,10 +33,29 @@ final class GraphAcyclicSPTests: XCTestCase {
     override func setUp() {
         super.setUp()
         
+        whenGraphIsDAG()
+    }
+    
+    override func tearDown() {
+        sut = nil
+        
+        super.tearDown()
+    }
+    
+    // MARK: - When
+    func whenGraphHasNoEdges() {
+        let vertexCount = Int.random(in: 10..<100)
+        let graph = AdjacencyList<WeightedEdge<Double>>(kind: .directed, vertexCount: vertexCount)
+        let cycleUtil = GraphCycle(graph: graph)
+        let source = (0..<vertexCount).randomElement()!
+        sut = GraphAcyclicSP(cycleUtil, source: source)
+    }
+    
+    func whenGraphIsDAG() {
         let vertexCount = Int.random(in: 10..<100)
         var edges: Array<WeightedEdge<Double>> = []
         for tail in 0..<(vertexCount / 2) {
-            let weight = Double.random(in: 0.5..<10.5)
+            let weight = Double.random(in: -0.5...0.5)
             edges.append(WeightedEdge(tail: tail, head: tail + (vertexCount / 2), weight: weight))
         }
         let graph = AdjacencyList(kind: .directed, edges: edges)
@@ -46,10 +65,129 @@ final class GraphAcyclicSPTests: XCTestCase {
         sut = GraphAcyclicSP(cycleUtil, source: source)!
     }
     
-    override func tearDown() {
-        sut = nil
+    // MARK: - Tests
+    func test_init_whenGraphCycleReturnsNonNilTopologicalSort_thenReturnsNewInstance() {
+        let vertexCount = Int.random(in: 10..<100)
+        var edges: Array<WeightedEdge<Double>> = []
+        for tail in 0..<(vertexCount / 2) {
+            let weight = Double.random(in: 0.5..<10.5)
+            edges.append(WeightedEdge(tail: tail, head: tail + (vertexCount / 2), weight: weight))
+        }
+        let graph = AdjacencyList(kind: .directed, edges: edges)
+        let cycleUtil = GraphCycle(graph: graph)
+        let source = (0..<graph.vertexCount).randomElement()!
         
-        super.tearDown()
+        sut = GraphAcyclicSP(cycleUtil, source: source)!
+        XCTAssertNotNil(sut)
+        XCTAssertEqual(sut.graph, graph)
+        XCTAssertEqual(sut.source, source)
     }
-
+    
+    func testInit_whenGraphCycleReturnsNilTopologicalSort_thenReturnsNil() {
+        let edges = givenRandomWeightedEdges()
+        let graph = AdjacencyList<WeightedEdge<Double>>(kind: .undirected, edges: edges)
+        let source = (0..<graph.vertexCount).randomElement()!
+        let cycleUtil = GraphCycle(graph: graph)
+        XCTAssertNil(GraphAcyclicSP(cycleUtil, source: source))
+    }
+    
+    // MARK: - weight(to:) tests
+    func testWeightTo_whenGraphHasNoEdges_thenReturnsNilForAnyDestinationVertexDifferentFromSource() {
+        whenGraphHasNoEdges()
+        for destination in 0..<sut.graph.vertexCount where destination != sut.source {
+            XCTAssertNil(sut.weight(to: destination))
+        }
+    }
+    
+    func testWeightTo_whenSourceIsEqualToDestination_thenReturnsZero() {
+        whenGraphHasNoEdges()
+        XCTAssertEqual(sut.weight(to: sut.source), .zero)
+        
+        whenGraphIsDAG()
+        XCTAssertEqual(sut.weight(to: sut.source), .zero)
+    }
+    
+    func testWeightTo_whenGraphIsDAGAndDestinationIsDifferentThanSource_thenReturnsNilIfThereIsNoPathOtherwiseTotalWeightOfPath() {
+        whenGraphIsDAG()
+        for destination in 0..<sut.graph.vertexCount where destination != sut.source {
+            let expectedResult: Double? = sut.path(to: destination)
+                .reduce(nil, { partial, edge in
+                    guard
+                        let partial = partial
+                    else { return edge.weight }
+                    
+                    return partial + edge.weight
+                })
+            XCTAssertEqual(sut.weight(to: destination), expectedResult)
+        }
+    }
+    
+    // MARK: - hasPath(to:) tests
+    func testHasPathTo_whenGraphHasNoEdges_thenReturnsFalseForAnyDestinationVertexDifferentThanSource() {
+        whenGraphHasNoEdges()
+        for destination in 0..<sut.graph.vertexCount where destination != sut.source {
+            XCTAssertFalse(sut.hasPath(to: destination))
+        }
+    }
+    
+    func testHasPathTo_whenDestinationIsEqualToSource_thenReturnsTrue() {
+        whenGraphHasNoEdges()
+        var destination = sut.source
+        XCTAssertTrue(sut.hasPath(to: destination))
+        
+        whenGraphIsDAG()
+        destination = sut.source
+        XCTAssertTrue(sut.hasPath(to: destination))
+    }
+    
+    func testHasPathTo_whenGraphIsDAG_thenReturnsTrueIfDestinationIsReachableFromSourceOtherWiseFalse() {
+        whenGraphIsDAG()
+        let reachablity = GraphReachability(graph: sut.graph, sources: [sut.source])
+        for destination in 0..<sut.graph.vertexCount {
+            XCTAssertEqual(sut.hasPath(to: destination), reachablity.isReachableFromSources(destination))
+        }
+    }
+    
+    // MARK: - path(to:) tests
+    func testPathTo_whenGraphHasNoEdges_thenReturnsEmptySequenceForAnyDestinationVertex() {
+        whenGraphHasNoEdges()
+        OUTER: for destination in 0..<sut.graph.vertexCount {
+            let path = sut.path(to: destination)
+            for _ in path {
+                XCTFail("path is not empty for destination: \(destination)")
+                continue OUTER
+            }
+        }
+    }
+    
+    func testPathTo_whenDestinationIsEqualToSource_thenReturnsEmptySequence() {
+        whenGraphHasNoEdges()
+        var destination = sut.source
+        var path = sut.path(to: destination)
+        for _ in path {
+            XCTFail("path is not empty when destination is equal to source.")
+            break
+        }
+        
+        whenGraphIsDAG()
+        destination = sut.source
+        path = sut.path(to: destination)
+        for _ in path {
+            XCTFail("path is not empty when destination is equal to source.")
+            break
+        }
+    }
+    
+    func testPathTo_whenDestinationIsDifferentFromSourceAndHasPathToDestinationReturnsTrue_thenReturnsSequenceContainingEdgesFromSourceToDestination() {
+        whenGraphIsDAG()
+        for destination in 0..<sut.graph.vertexCount where destination != sut.source && sut.hasPath(to: destination) == true {
+            let path = sut.path(to: destination)
+            var pathDest = sut.source
+            for edge in path {
+                pathDest = edge.other(pathDest)
+            }
+            XCTAssertEqual(pathDest, destination)
+        }
+    }
+    
 }

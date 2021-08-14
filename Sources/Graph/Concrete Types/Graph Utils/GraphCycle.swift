@@ -116,10 +116,13 @@ public final class GraphCycle<G: Graph> {
                         (graph.kind == .directed && isOnStack.contains(other)) ||
                             (graph.kind == .undirected && parent != other)
                     {
-                        var current = currentVertex
-                        while current != other {
-                            cycleStack.append(current)
-                            current = edgeTo[current]!
+                        var current: Int? = currentVertex
+                        while
+                            let inCycle = current,
+                            inCycle != other
+                        {
+                            cycleStack.append(inCycle)
+                            current = edgeTo[inCycle]
                         }
                         cycleStack.append(other)
                         cycleStack.append(currentVertex)
