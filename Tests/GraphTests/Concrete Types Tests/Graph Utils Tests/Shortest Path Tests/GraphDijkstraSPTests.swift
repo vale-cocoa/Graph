@@ -98,7 +98,7 @@ final class GraphDijkstraSPTests: XCTestCase {
         }
     }
     
-    func testWeightTo_whenDestinationIsEqualToSourceAndNoNegativeWeightedEdgesWereDiscovered_thenDoesntThrowsAndReturnsZero() {
+    func testWeightTo_whenDestinationIsEqualToSourceAndNoNegativeWeightedEdgesWereDiscovered_thenDoesntThrowAndReturnsZero() {
         whenGraphHasNoEdges()
         var destination = sut.source
         do {
@@ -158,7 +158,7 @@ final class GraphDijkstraSPTests: XCTestCase {
         }
     }
     
-    func testHasPathTo_whenDestinationIsEqualToSourceAndNoEdgesWithNegativeWeightWereFound_thenDoesntThrowAndReturnsTrue() {
+    func testHasPathTo_whenDestinationIsEqualToSourceAndNoNegativeWeightedEdgesWereDiscovered_thenDoesntThrowAndReturnsTrue() {
         whenGraphHasNoEdges()
         var destination = sut.source
         do {
@@ -201,10 +201,45 @@ final class GraphDijkstraSPTests: XCTestCase {
         }
     }
     
+    func testPathTo_whenwhenGraphHasEdgesWithPositiveWeightsAndDestinationIsDifferentThanSourceAndHasPathToDestinationIsTrue_thenDoesntThrowAndReturnsSequenceContainingEdgesFromSourceToDestination() {
+        whenGraphHasEdgesWithPositiveWeights()
+        for destination in 0..<sut.graph.vertexCount where destination != sut.source {
+            do {
+                guard
+                    try sut.hasPath(to: destination)
+                else { continue }
+                
+                let path = try sut.path(to: destination)
+                var pathDest = sut.source
+                for edge in path {
+                    pathDest = edge.other(pathDest)
+                }
+                XCTAssertEqual(pathDest, destination)
+            } catch {
+                XCTFail("Has thrown error")
+            }
+        }
+    }
+    
     func testPathTo_whenBuildingShortestPathsEncountersAnEdgeWithNegativeWeight_thenAlwaysThrows() {
         whenBuildingShortestPathsEncountersAnEdgeWithNegativeWeight()
         for destination in 0..<sut.graph.vertexCount {
             XCTAssertThrowsError(try sut.path(to: destination))
+        }
+    }
+    
+    func testPathTo_memoization() {
+        whenGraphHasEdgesWithPositiveWeights()
+        let allGraphVertices = (0..<sut.graph.vertexCount)
+        do {
+            try allGraphVertices.forEach {
+                let _ = try sut.path(to: $0)
+            }
+            try allGraphVertices.shuffled().forEach {
+                let _ = try sut.path(to: $0)
+            }
+        } catch {
+            XCTFail("Has thrown error")
         }
     }
     

@@ -190,4 +190,15 @@ final class GraphAcyclicSPTests: XCTestCase {
         }
     }
     
+    func testPathTo_memoization() {
+        whenGraphIsDAG()
+        let allGraphVertices = (0..<sut.graph.vertexCount)
+        allGraphVertices.forEach {
+            let _ = sut.path(to: $0)
+        }
+        allGraphVertices.shuffled().forEach {
+            let _ = sut.path(to: $0)
+        }
+    }
+    
 }

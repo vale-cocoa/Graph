@@ -187,6 +187,17 @@ final class GraphSPTests: XCTestCase {
         }
     }
     
+    func testPathTo_memoization() {
+        whenGraphHasEdges()
+        let allGraphVertices = (0..<sut.graph.vertexCount)
+        allGraphVertices.forEach {
+            let _ = sut.path(to: $0)
+        }
+        allGraphVertices.shuffled().forEach {
+            let _ = sut.path(to: $0)
+        }
+    }
+    
     // MARK: - negativeCycle tests
     func testNegativeCycle_whenGraphHasNoEdges_thenIsEmpty() {
         whenGraphHasNoEdges()

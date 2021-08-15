@@ -142,7 +142,7 @@ extension GraphSP {
         else { return AnySequence(EmptyCollection()) }
         
         let base: Array<G.Edge>!
-        if let cached = _memoizedSP.object(forKey: NSNumber(integerLiteral: vertex)) as? Array<G.Edge> {
+        if let cached = _memoizedSP.object(forKey: vertex as NSNumber) as? Array<G.Edge> {
             
             base = cached
         } else {
@@ -153,7 +153,7 @@ extension GraphSP {
                 from = edge.other(from)
             }
             defer {
-                _memoizedSP.setObject(reversedPath as NSArray, forKey: NSNumber(integerLiteral: vertex))
+                _memoizedSP.setObject(reversedPath as NSArray, forKey: vertex as NSNumber)
             }
             
             base = reversedPath
