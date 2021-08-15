@@ -35,9 +35,12 @@ import IndexedPriorityQueue
 /// Note that results are valid for the graph state used at initialization time, thus a new instance must be
 /// created to query a mutated graph instance
 /// - Note: This utility adopts the Dijkstra algorithm, therefore overall complexity will be
-///          O(?) for the first query, and **edges weight values must not be negative.**
-///         That is Dijkstra algorithm not get correctly shortests paths in presence of negative weight values
-///         or worst get into an infinite loop if the graph contains a negative cycle.
+///          O(*E* log*V*) for the first query —where *E* is the count of edges and *V* is the count of vertices
+///          in the queried graph.
+///          **Edges weight values must not be negative.**
+///         That is Dijkstra algorithm doesn't get correctly shortests paths in graphs containing edges
+///         with a negative weight value or worst it could get into an infinite loop
+///         if the graph contains a negative cycle.
 public final class GraphDijkstraSP<G: Graph> where G.Edge: WeightedGraphEdge {
     /// Error thrown by `GraphDijkstraSP ` utility.
     public enum Error: Swift.Error {
@@ -76,8 +79,9 @@ public final class GraphDijkstraSP<G: Graph> where G.Edge: WeightedGraphEdge {
     
     /// Returns a new `GraphDijkstraSP` instance initialized to the given graph and the given source values.
     ///
-    /// - Parameter graph: Some `Graph` instance, **must have vertexCount value grater than 0**.
-    /// - Parameter source: A vertex, **must be included in given graph**.
+    /// - Parameter graph:  Some `Graph` instance to query for shortest paths;
+    ///                     **must have vertexCount value grater than 0**.
+    /// - Parameter source: A vertex to use as source; **must be included in the given graph**.
     /// - Returns: A new `GraphDijkstraSP` instance intialized to the specified parameters.
     /// - Complexity: O(1)
     public init(graph: G, source: Int) {
@@ -99,8 +103,8 @@ extension GraphDijkstraSP {
     ///             **This utility only works for querying edge weighted graphs with non-negative weights.**
     /// - Returns:  The total weight of the shortest path from the queried source vertex to the given
     ///             destination vertex if such path exists in queried graph otherwise `nil`.
-    /// - Complexity:   O(*E* *V*) where *E* is the count of edges and *V* is the count of vertices
-    ///                 in the queried graph when queried for the first time, then O(1) for subsequent queries.
+    /// - Complexity:   O(*E* *V*) —where *E* is the count of edges and *V* is the count of vertices
+    ///                 in the queried graph—when queried for the first time; then O(1) for subsequent queries.
     public func weight(to vertex: Int) throws -> G.Edge.Weight? {
         precondition(0..<graph.vertexCount ~= vertex, "Destination vertex must be in graph.")
         guard
@@ -119,8 +123,8 @@ extension GraphDijkstraSP {
     ///             **This utility only works for querying edge weighted graphs with non-negative weights.**
     /// - Returns:  A boolean value: `true` if there is a path connecting the queried source
     ///             and the given destination vertices in the queried graph, otherwise `false`.
-    /// - Complexity:   O(*E* *V*) where *E* is the count of edges and *V* is the count of vertices
-    ///                 in the queried graph when queried for the first time, then O(1) for subsequent queries.
+    /// - Complexity:   O(*E* *V*) —where *E* is the count of edges and *V* is the count of vertices
+    ///                 in the queried graph—when queried for the first time; then O(1) for subsequent queries.
     public func hasPath(to vertex: Int) throws -> Bool {
         precondition(0..<graph.vertexCount ~= vertex, "Destination vertex must be in graph.")
         guard
@@ -141,9 +145,9 @@ extension GraphDijkstraSP {
     /// - Returns:  A sequence of edges representing the shortest path in the queried graph
     ///             going from the queried source to the given destination verticies.
     ///             Such sequence will be empty if there is not such path.
-    /// - Complexity:   O(*E* *V*) where *E* is the count of edges and *V* is the count of vertices
-    ///                 in the queried graph when queried for the first time,
-    ///                 then amortized O(1) for subsequent queries.
+    /// - Complexity:   O(*E* *V*) —where *E* is the count of edges and *V* is the count of vertices
+    ///                 in the queried graph—when queried for the first time; then amortized O(1)
+    ///                 for subsequent queries.
     public func path(to vertex: Int) throws -> AnySequence<G.Edge> {
         precondition(0..<graph.vertexCount ~= vertex, "Destination vertex must be in graph.")
         guard

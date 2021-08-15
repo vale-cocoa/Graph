@@ -28,16 +28,19 @@ import Foundation
 
 /// A utility to query a weighted graph for the shortest paths from a source vertex to other vertices.
 ///
-/// Since a graph can contain a huge number of vertices and edges and the algorithm for finding shortest paths leverages on
-/// DAGs, this utility is a stand-alone class type which gets initialized directly from the GraphCycle utility.
+/// Since a graph can contain a huge number of vertices and edges and the algorithm for finding
+/// shortest paths leverages on DAGs, this utility is a stand-alone class type which gets initialized
+/// directly from the `GraphCycle` utility.
 /// Results for queries are calculated lazily the first time a query is made.
 /// Note that results are valid for the graph state used at initialization time, thus a new instance must be
 /// created to query a mutated graph instance.
 /// - Note: This utility adopts an algorithm leveraging on the topological sort of a directed graph;
-///         therefore complexity of first query should be in the magnitude of O(?).
+///         therefore complexity of first query should be in the magnitude of O(*E*+*V*) where
+///         *E* is the count of edges and *V* is the count of vertices in the queried graph.
 /// - Important:    `GraphAcyclicSP` new instances can only be instanciated and obtained
-///                 by querying a `GraphCycle` utility instance via its `shortestsPaths(from:)`
-///                 method. Such instance method only returns a valid `GraphAcyclicSP` instance
+///                 by querying a `GraphCycle` instance via its `shortestsPaths(from:)`
+///                 method.
+///                 Such instance method only returns a valid `GraphAcyclicSP` instance
 ///                 if its queried graph is an edge weighted directed acyclic graph.
 public final class GraphAcyclicSP<G: Graph> where G.Edge: WeightedGraphEdge {
     /// The graph to query.
@@ -89,8 +92,8 @@ extension GraphAcyclicSP {
     /// - Parameter vertex: The destination vertex. **Must be included in queried graph**.
     /// - Returns:  The total weight of the shortest path from the queried source vertex to the given
     ///             destination vertex if such path exists in queried graph otherwise `nil`.
-    /// - Complexity:   O(*E* *V*) where *E* is the count of edges and *V* is the count of vertices
-    ///                 in the queried graph when queried for the first time, then O(1) for subsequent queries.
+    /// - Complexity:   O(*E*+*V*) —where *E* is the count of edges and *V* is the count of vertices
+    ///                 in the queried graph— when queried for the first time; then O(1) for subsequent queries.
     public func weight(to vertex: Int) -> G.Edge.Weight? {
         precondition(0..<graph.vertexCount ~= vertex, "Destination vertex must be in graph.")
         
@@ -103,8 +106,8 @@ extension GraphAcyclicSP {
     /// - Parameter vertex: The destination vertex. **Must be included in queried graph**.
     /// - Returns:  A boolean value: `true` if there is a path connecting the queried source
     ///             and the given destination vertices in the queried graph, otherwise `false`.
-    /// - Complexity:   O(*E* *V*) where *E* is the count of edges and *V* is the count of vertices
-    ///                 in the queried graph when queried for the first time, then O(1) for subsequent queries.
+    /// - Complexity:   O(*E*+*V*) —where *E* is the count of edges and *V* is the count of vertices
+    ///                 in the queried graph— when queried for the first time; then O(1) for subsequent queries.
     public func hasPath(to vertex: Int) -> Bool {
         precondition(0..<graph.vertexCount ~= vertex, "Destination vertex must be in graph.")
         
@@ -119,9 +122,9 @@ extension GraphAcyclicSP {
     /// - Returns:  A sequence of edges representing the shortest path in the queried graph
     ///             going from the queried source to the given destination verticies.
     ///             Such sequence will be empty if there is not such path.
-    /// - Complexity:   O(*E* *V*) where *E* is the count of edges and *V* is the count of vertices
-    ///                 in the queried graph when queried for the first time,
-    ///                 then amortized O(1) for subsequent queries.
+    /// - Complexity:   O(*E*+*V*) —where *E* is the count of edges and *V* is the count of vertices
+    ///                 in the queried graph— when queried for the first time;
+    ///                  then amortized O(1) for subsequent queries.
     public func path(to vertex: Int) -> AnySequence<G.Edge> {
         guard
             hasPath(to: vertex)
@@ -183,16 +186,16 @@ extension GraphAcyclicSP {
 
 extension GraphCycle where G.Edge: WeightedGraphEdge {
     /// Returns the shortest paths utility for the queried directed weighted graph when such graph is also acyclic,
-    /// otherwise nil.
+    /// otherwise `nil`.
     /// That is for an edge weighted direct acyclic graph the utility for shortest paths can be build.
     ///
     /// - Parameter source: The source vertex for quering shortest paths.
     ///                     **Must be included in the queried  graph.**
     /// - Returns:  A `GraphAcyclicSP` utilty instance initialized to be queried for shortest paths from the given
-    ///             `source` vertex to other vertices of the queried `graph`, nil in case the `graph` is not
+    ///             `source` vertex to other vertices of the queried graph, `nil` in case the queried graph is not
     ///             an acyclic edge weighted directed graph.
-    /// - Complexity:   Amortized O(1). It will take O(*V* + *E*) complexity when queried for the first time,
-    ///                 where *V* is the count of vertices and *E* is count of edges of the queried graph.
+    /// - Complexity:   Amortized O(1). It will take O(*V*+*E*) complexity when queried for the first time
+    ///                 —where *V* is the count of vertices and *E* is count of edges of the queried graph.
     public func shortestsPaths(from source: Int) -> GraphAcyclicSP<G>? {
         precondition((0..<graph.vertexCount) ~= source, "source vertex must be in queried graph.")
         

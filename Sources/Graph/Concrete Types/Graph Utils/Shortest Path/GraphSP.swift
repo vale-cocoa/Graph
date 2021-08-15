@@ -34,8 +34,9 @@ import Deque
 /// Results for queries are calculated lazily the first time a query is made.
 /// Note that results are valid for the graph state used at initialization time, thus a new instance must be
 /// created to query a mutated graph instance
-/// - Note: This utility adopts the Bellman-Ford algorithm; implementation is queue based,
-///         therefore overall complexity will be most likely O(*E* + *V*) for the first query.
+/// - Note: This utility adopts the Bellman-Ford algorithm and its implementation is queue based,
+///         therefore overall complexity will be most likely O(*E* *V*) for the first query,
+///         where *E* is the count of edges and *V* is the count of vertices in the queried graph.
 public final class GraphSP<G: Graph> where G.Edge: WeightedGraphEdge {
     /// The graph to query.
     public let graph: G
@@ -66,8 +67,8 @@ public final class GraphSP<G: Graph> where G.Edge: WeightedGraphEdge {
     /// An array of vertices in the queried graph which represents a negative cycle found while attempting to build
     /// shortest paths. Empty when the queried graph doesn't contain any negative cycle.
     ///
-    /// - Complexity:   O(*E* *V*) where *E* is the count of edges and *V* is the count of vertices
-    ///                 in the queried graph when queried for the first time, then O(1) for subsequent queries.
+    /// - Complexity:   O(*E* *V*) —where *E* is the count of edges and *V* is the count of vertices
+    ///                 in the queried graph— when queried for the first time; then O(1) for subsequent queries.
     public fileprivate(set) lazy var negativeCycle: Array<Int> = {
         let (edgeTo, weightTo, _negativeCyle) = _buildShortestPaths()
         defer {
@@ -102,8 +103,8 @@ extension GraphSP {
     /// - Parameter vertex: The destination vertex. **Must be included in queried graph**.
     /// - Returns:  The total weight of the shortest path from the queried source vertex to the given
     ///             destination vertex if such path exists in queried graph otherwise `nil`.
-    /// - Complexity:   O(*E* *V*) where *E* is the count of edges and *V* is the count of vertices
-    ///                 in the queried graph when queried for the first time, then O(1) for subsequent queries.
+    /// - Complexity:   O(*E* *V*) —where *E* is the count of edges and *V* is the count of vertices
+    ///                 in the queried graph— when queried for the first time; then O(1) for subsequent queries.
     public func weight(to vertex: Int) -> G.Edge.Weight? {
         precondition(0..<graph.vertexCount ~= vertex, "Destination vertex must be in graph.")
         
@@ -116,8 +117,8 @@ extension GraphSP {
     /// - Parameter vertex: The destination vertex. **Must be included in queried graph**.
     /// - Returns:  A boolean value: `true` if there is a path connecting the queried source
     ///             and the given destination vertices in the queried graph, otherwise `false`.
-    /// - Complexity:   O(*E* *V*) where *E* is the count of edges and *V* is the count of vertices
-    ///                 in the queried graph when queried for the first time, then O(1) for subsequent queries.
+    /// - Complexity:   O(*E* *V*) —where *E* is the count of edges and *V* is the count of vertices
+    ///                 in the queried graph— when queried for the first time; then O(1) for subsequent queries.
     public func hasPath(to vertex: Int) -> Bool {
         precondition(0..<graph.vertexCount ~= vertex, "Destination vertex must be in graph.")
         
@@ -125,16 +126,16 @@ extension GraphSP {
     }
     
     /// Returns a sequence of edges representing the shortest path in the queried graph
-    /// going from the queried source to the given destination verticies.
+    /// going from the queried `source` to the given destination verticies.
     /// Such sequence will be empty if there is not such path.
     ///
     /// - Parameter vertex: The destination vertex. **Must be included in queried graph**.
     /// - Returns:  A sequence of edges representing the shortest path in the queried graph
     ///             going from the queried source to the given destination verticies.
     ///             Such sequence will be empty if there is not such path.
-    /// - Complexity:   O(*E* *V*) where *E* is the count of edges and *V* is the count of vertices
-    ///                 in the queried graph when queried for the first time,
-    ///                 then amortized O(1) for subsequent queries.
+    /// - Complexity:   O(*E* *V*) —where *E* is the count of edges and *V* is the count of vertices
+    ///                 in the queried graph— when queried for the first time; then amortized O(1)
+    ///                 for subsequent queries.
     public func path(to vertex: Int) -> AnySequence<G.Edge> {
         guard
             vertex != source,
