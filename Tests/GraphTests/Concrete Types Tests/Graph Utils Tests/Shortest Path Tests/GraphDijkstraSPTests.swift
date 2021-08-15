@@ -178,6 +178,20 @@ final class GraphDijkstraSPTests: XCTestCase {
         }
     }
     
+    func testHasPathTo_whenGraphHasEdgesWithPositiceWeights_thenDoesntThrowAndReturnsReturnsTrueIfDestinationIsReachableFromSourceOtherWiseFalse() {
+        whenGraphHasEdgesWithPositiveWeights()
+        let reachability = GraphReachability(graph: sut.graph, sources: [sut.source])
+        for destination in 0..<sut.graph.vertexCount {
+            do {
+                let result = try sut.hasPath(to: destination)
+                XCTAssertEqual(result, reachability.isReachableFromSources(destination))
+            } catch {
+                XCTFail("Has thrown error")
+            }
+            
+        }
+    }
+    
     func testHasPathTo_whenBuildingShortestPathsEncountersAnEdgeWithNegativeWeight_thenAlwaysThrows() {
         whenBuildingShortestPathsEncountersAnEdgeWithNegativeWeight()
         for destination in 0..<sut.graph.vertexCount {
@@ -201,7 +215,7 @@ final class GraphDijkstraSPTests: XCTestCase {
         }
     }
     
-    func testPathTo_whenwhenGraphHasEdgesWithPositiveWeightsAndDestinationIsDifferentThanSourceAndHasPathToDestinationIsTrue_thenDoesntThrowAndReturnsSequenceContainingEdgesFromSourceToDestination() {
+    func testPathTo_whenGraphHasEdgesWithPositiveWeightsAndDestinationIsDifferentThanSourceAndHasPathToDestinationIsTrue_thenDoesntThrowAndReturnsSequenceContainingEdgesFromSourceToDestination() {
         whenGraphHasEdgesWithPositiveWeights()
         for destination in 0..<sut.graph.vertexCount where destination != sut.source {
             do {

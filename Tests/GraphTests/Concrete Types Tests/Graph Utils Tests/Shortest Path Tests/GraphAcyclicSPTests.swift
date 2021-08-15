@@ -142,9 +142,9 @@ final class GraphAcyclicSPTests: XCTestCase {
     
     func testHasPathTo_whenGraphIsDAG_thenReturnsTrueIfDestinationIsReachableFromSourceOtherWiseFalse() {
         whenGraphIsDAG()
-        let reachablity = GraphReachability(graph: sut.graph, sources: [sut.source])
+        let reachability = GraphReachability(graph: sut.graph, sources: [sut.source])
         for destination in 0..<sut.graph.vertexCount {
-            XCTAssertEqual(sut.hasPath(to: destination), reachablity.isReachableFromSources(destination))
+            XCTAssertEqual(sut.hasPath(to: destination), reachability.isReachableFromSources(destination))
         }
     }
     
