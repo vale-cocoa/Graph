@@ -62,17 +62,9 @@ public final class GraphTransitiveClosure<G: Graph> {
     /// - Parameter destination: A vertex, **must be in the queried graph**.
     /// - Returns:  A boolean value, `true` when the vertex specified as `destination` parameter
     ///             is reachable from the vertex specified as `source` parameter; otherwise `false`.
-    /// - Complexity:   For quereried graphs with `kind == .undirected` amortized O(1).
-    ///                 It will take O(*V* + *E*) complexity to build this result when
-    ///                 queried for the first time, where *V* is the count of vertices of the queried graph,
-    ///                 and *E* is the number of edges in the queried graph.
-    ///                 For the queried graphs with `kind == .directed`
-    ///                 O(*V* + *E*) complexity, where *V* is the count of vertices
-    ///                 of the queried graph and *E* is the count of edges in the queried graph.
-    ///                 In practice it would be amortized O(1) complexity for every
-    ///                 subsequent query made for the same source vertex, since this utility
-    ///                 memozises in its cache the reachability map from such vertex
-    ///                 after it was built when queried for the first time.
+    /// - Complexity:   Amortized O(1). It will take O(*V* + *E*) complexity to build this result when
+    ///                 queried for the first time, where *E* is the number of edges and
+    ///                 *V* is the count of vertices in the queried graph.
     public func reachability(from source: Int, to destination: Int) -> Bool {
         precondition(0..<graph.vertexCount ~= source, "Vertex: \(source) is not in graph.")
         precondition(0..<graph.vertexCount ~= destination, "Vertex: \(destination) is not in graph.")

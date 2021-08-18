@@ -262,6 +262,12 @@ Available graph queries:
 
 Every query builds the data in the utility for all other ones too the first time is called.
 
+Additionally when the queried graph has weighted edges, `GraphCycle` instance has the method
+`shortestsPaths(from:)` which given a `source` vertex, will optionally return a `GraphAcyclicSP`
+utility for quering shortest paths in a directed acyclic graph. That is in case the queried graph is a
+weighted edge directed acyclic graph, it is also possible to calculate shortests paths using its
+topological sort.
+
 ### `GraphDegrees`
 This utility is used to query a graph for degrees of its vertices and other statistic.
 A `GraphDegrees` instance can be obtained via its initializer `init(graph:)`,  which takes as its argument the graph intance to query.
@@ -317,3 +323,9 @@ The *transitive closure* is usallly used for directed graphs, although this util
 directed or undirected graphs. 
 * When the queried graph is undirected, then internally the utility will just adopt the connection components of the graph to determine vertices reachability: that is in an undirected graph all vertices in the same connected component are connected to each other. Such connected components for the queried graph are built the first time a query is made, and are valid for every vertex in the graph used as source parameter.
 * For queried directed graphs , the utility builds the reachability map from the given `source` vertex and check if it contains the given `destination` vertex. Such map for the given `source` vertex gets memoized after being built the first time, thus when querying again the same `source` vertex for reachability towards another `destination` vertex, it gets most likely reused avoiding the process of rebuilding it. Note that these reachability maps for every `source` vertex are individually and lazily built the first time such vertex is queried.
+
+### `GraphMSF`
+
+### Shortest paths utilities
+
+### FlowNetwork
