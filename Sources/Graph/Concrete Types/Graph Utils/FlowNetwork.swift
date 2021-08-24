@@ -31,7 +31,7 @@ import Deque
 ///
 /// Since a graph can contain a huge number of vertices and edges, this utility is a stand-alone class type which
 /// gets initialized with the weighted graph to query and two of its vertices.
-/// Results for queries are calculated lazily the first time one query is made between `maxFlow`, `inCut(_:)` or
+/// Results for queries are calculated lazily the first time one query is made between `maxFlow`, `inMinCut(_:)` or
 /// `flowedAdjacencies(for:)`.
 /// Note that results are valid for the graph state used at initialization time, thus a new instance must be
 /// created to query a mutated graph instance.
@@ -71,6 +71,29 @@ public final class FlowNetwork<G: Graph> where G.Edge: WeightedGraphEdge {
         }
         
         return value
+    }()
+    
+    /// Returns an array containing the flow edges representing the min-cut of this flow network instance.
+    ///
+    /// - Complexity:   O(*E^2* *U*) the first time this value is queried —where *E* is the count of edges and
+    ///                 *U* is the count of augmented paths in the flow network instance.
+    ///                 Then O(1).
+    public fileprivate(set) lazy var minCut: [FlowEdge] = {
+        guard
+            flowEdgeCount > 0,
+            s != t
+        else { return [] }
+        
+        return _visited
+            .flatMap({ vertex in
+                _flowedAdjacencies
+                    .withUnsafeBufferPointer({ buffer in
+                        buffer[vertex]
+                            .filter({ flowEdge in
+                                flowEdge.from == vertex && !_visited.contains(flowEdge.to)
+                            })
+                    })
+            })
     }()
     
     fileprivate lazy var _visited: Set<Int> = {
@@ -233,11 +256,12 @@ extension FlowNetwork {
     /// - Complexity:   O(*E^2* *U*) the first time this value is queried —where *E* is the count of edges and
     ///                 *U* is the count of augmented paths in the flow network instance.
     ///                 Then O(1).
-    public func inCut(_ vertex: Int) -> Bool {
+    public func inMinCut(_ vertex: Int) -> Bool {
         precondition(0..<graph.vertexCount ~= vertex, "vertex must be in graph.")
         
         return _visited.contains(vertex)
     }
+    
     /// Returns an array containing the *flowed adjacencies* to the specified vertex in this flow network.
     /// That is a *flowed adjacency* to a vertex is a `FlowEdge`.
     ///

@@ -40,8 +40,6 @@ import UnionFind
 public final class GraphMSF<G: Graph> where G.Edge: WeightedGraphEdge {
     
     /// The algorithm to use for building up the minimum sparring forest of the queried graph.
-    ///
-    /// - Todo: Perhaps also add Chazelle algorithm.
     public enum Algorithm: CaseIterable {
         /// Lazy version of Prim's algorithm to build the minimum spanning tree of a graph connected component.
         ///
@@ -51,7 +49,7 @@ public final class GraphMSF<G: Graph> where G.Edge: WeightedGraphEdge {
         
         /// Eager version of Prim's algorithm to build the minimum spanning tree of a graph connected component.
         ///
-        /// - Complexity: O(*E * log *E*) where *E* is the count of edges of the queried graph.
+        /// - Complexity: O(*E* log *E*) where *E* is the count of edges of the queried graph.
         case primEagerAlgorithm
         
         /// Kruskal's algorithm to build the minimum spanning tree of a graph connected component.

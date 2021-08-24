@@ -129,6 +129,7 @@ A conforming types must also implement the `reversed()` method, which must be im
 2) `e.reversed().other(w)` must return `v`
 3) `e.reversed().other(v)` must return `w`
 
+
 ### Default implementations
 `GraphEdge` protocol provides some default implementations helpers:
 * `tail` getter will return the same value of `either`.
@@ -137,9 +138,11 @@ A conforming types must also implement the `reversed()` method, which must be im
 
 **It is highly recommended to not override these helpers**.
 
+
 ### `GraphEdge` equality and hashing
 `GraphEdge` has its default implementations for both, comparison for equality and hashing. 
 Such default implementations leverages on `either` getter value and `other(either)` returned value.
+
 
 ### `GraphEdge` undirected comparison operator `<~>`
 The `<~>` infix operator is implemented for `GraphEdge` to allow comparision between two edges as undirected. That is supposing `e` and `d` are two edges where `e.either == v`, `d.either == w` then:
@@ -160,6 +163,9 @@ e <~> f
 e <~> g
 // RETURNS TRUE
 ```
+
+
+
 ## `WeightedGraphEdge` Protocol
 This protocol inherits from `GraphEdge` protocol, adding abstractions defining properties and functionality for *weighted* edges adopting value semantics. 
 That is `WeightedGraphEdge` protocol associates to a generic `Weight` type which must conforms to `AdditiveArithmetic`, `Comparable` and `Hashable` protocols.
@@ -170,6 +176,7 @@ Types conforming to `WeightedGraphEdge` must implement the `weight` getter, whic
 Moreover the method `reversedWith(weight:)` must be implemented. Such method must return an inverted edge in regards to its `either` and `other(either)` values as specified for `GraphEdge` protocol, but allowing to modify the `weight` value of the returned edge.
 That is a type conforming to `WeightedGraphEdge` protocol must implement `reversed()` method so that the returned edge will have the same `weight` value of the callee; in order to obtain a reversed edge with a different weight value than the callee, the `reversedWith(weight:)` method must be used.
 
+
 ### `WeightedGraphEdge` equality, hashing and undirected comparison operator `<~>`
 Default implementations of equality comparison and hashing consider also the `weight` value of  instances. 
 The undirected comparison operator `<~>`, on the other hand, **will not** take into account the `weight` value of instances, thus supposing `e.either == v`, `e.weight == x` , `e.other(e.either) == w` and `d.either == w`, `d.other(w) == v`, `d.weoght == y` then:
@@ -178,6 +185,8 @@ The undirected comparison operator `<~>`, on the other hand, **will not** take i
 e <~> d
 // RETURNS TRUE
 ```
+
+
 ### `WeightedGraphEdge` undirected weighted comparison operator `<=~=>`
 To compare two weighted edges as undirected edges taking into account also the weight of the two edges, `WeightedGraphEdge` protocol provides the default implemented infix operator `<=~=>`.
 This operator will return `true` when the two compared weighted edges are *undirected equivalent* and have the same `weight` value:
@@ -197,14 +206,19 @@ e <~> revEW
 e <=~=> revEW
 // RETURNS FALSE
 ```
+
+
+
 ## Type erasure
 Type-erased wrappers for `Graph`, `GraphEdge` and `WeightedGraph` protocols are included in this package.
+
 
 ### `AnyGraph` type-erased wrapper
 An `AnyGraph` instance forwards its operations to a base graph having the same `Edge` type, hiding the specifics of the underlaying graph.
 
 You can create an instance of `AnyGraph` using one of the two initializers it provides:
 the `Graph` protocol initializer `init(kind:edges:)`, or by using the `init(_:)` initializer which takes a concrete graph instance to wrap.
+
 
 ### `AnyGraphEdge` type-erased wrapper 
 An `AnyGraphEdge` instance forwards its operations to a base edge, hiding the specifics of the underalying edge.
@@ -222,17 +236,24 @@ You can create an instance of `AnyWeightedGraphEdge` by adopting one of the foll
 * `init(vertices:weight:)` which takes as its parameters a tuple containing the two vertices the edge connects and the weight of the edge, as if the created edge would be an undirected connection in a graph.
 * `init(tail:head:weight:)` which takes the two connected vertices in order as its parameters `tail` and `head` plus the weight of the edge, as if the created edge would be a directed connection in a graph.
 
+
+
+
 ## Concrete types
 Concrete types conforming to `MutableGraph`, `GraphEdge` and `WeightedGraphEdge` are also included in this package.
 
 ### `AdjacencyList` mutable graph value type
 A mutable graph, generic over the `Edge` type and adopting as storage for its edges an adjacency list.
 
+
 ### `UnweightedEdge` graph edge value type
 An unweighted edge of a graph.
 
+
 ### `WeightedEdge` weighted graph edge value type
 A weighted edge of a graph, generic over the `Weight` type.
+
+
 
 ## Graph Utilities
 Since graphs can have a huge number of vertices and edges it's better to isolate utilities operating over a graph in seprate ad independent code units. 
@@ -240,6 +261,7 @@ Graph utilities in this package are swift classes operating on a graph given at 
 This imply that when a graph mutates, any of these utilities have to be bulit again with the new graph resulting from the mutation, thus having to recalcutale any queried result.
 The approach of having these utilities calculate lazily their queried results has the advantage of making failry inexpensive to create instances, postponing the heavy computations needed to calculate their data to the time a query is firstly made.
 Even though linear complexity algorithms are used in these utilities to calculate their data, these computations can be highly expensive: by isolating them in independent classes these computations can also be safely dispacthed to a different thread.
+
 
 ### `GraphBipartite`
 This utility is queried to check wheter a graph is two colors colorable or not.
@@ -251,6 +273,7 @@ Availbale graph queries:
 * `isColored(_:)` method, which takes a vertex of the graph and returns a boolean value according to the color state of such vertex after the bipartite detection.
 
 Every query builds the data in the utility for all other ones too the first time is called.
+
 
 ### `GraphCycle`
 Query a graph for checking if it contains a cycle or not.
@@ -268,6 +291,7 @@ utility for quering shortest paths in a directed acyclic graph. That is in case 
 weighted edge directed acyclic graph, it is also possible to calculate shortests paths using its
 topological sort.
 
+
 ### `GraphDegrees`
 This utility is used to query a graph for degrees of its vertices and other statistic.
 A `GraphDegrees` instance can be obtained via its initializer `init(graph:)`,  which takes as its argument the graph intance to query.
@@ -281,12 +305,14 @@ Available graph queries:
 
 Queries in this utility are independent to each other in regards of building the data for its results.
 
+
 ### `GraphPaths`
 Query a graph and a source vertex in it for paths to destination vertices in such graph, adopting a specified graph traversal methodology.
 Create a new `GraphPaths` instance by using the initializer `init(graph:source:buildPathsAdopting)`. This initializer takes a graph instance to query, a source vertex of such graph and a `GraphTrabversal` value that would be the chosen strategy to traverse the queried graph from the given source vertex to find a path to a destination vertex.
 Available queries:
 * `hasPath(to:)` method: takes a vertex of the queried graph as its parameter, and returns a bool value signaling the presence in the queried graph of a path connecting the queried source vertex to such given destination vertex.
 * `pathFromSource(to:)` method. This method takes as parameter a vertex in the queried graph, and returns an array eventually containing the vertices to traverse in the queried graph from the queried source vertex to the given destination vertex if such path exists, otherwise an empty array if such path doesn't exists in the queried graph.
+
 
 ### `GraphReachability`
 Query a graph from reachability from a set of its vertices to a given destination vertex.
@@ -300,6 +326,7 @@ Moreover `Graph` protocol provides two default implemented methods which serve t
 
 Note that these two methods take O(*V* + *E*) complexity for every query, even when the source/sources parameter is used subsequentially more times. 
 Thus it's recommended to use `GraphReachablity` utility when is clear that the same graph and source/sources vertices are gonna be queried for reachability more times.
+
 
 ### `GraphStronglyConnectedComponents`
 This utility provides functionalities for querying a graph's strongly connected components. 
@@ -317,6 +344,7 @@ Available queries:
 Every query listed above will trigger the utility to build its internal data used also by the other queries. That is, after a first query is done, every other query permformed will take O(1) complexity to complete, aside for the last two listed above, that return a strongly connected component contents and which are listed as O(*V*) complexity, where *V* is the count of vertices in the queried graph. 
 Practically these two methods memoize the strongly connected components inside a cache, thus they may perform in amortized O(1) complexity when a result has been already constructed for an another query made earlier. 
 
+
 ### `GraphTransitiveClosure`
 Create this utility by using the initializer `init(graph:)`, which takes the graph to query as its parameter. Then query it for reachablity from a source vertex to another destination vertex (both must be in queried graph) via the instance method `rachability(source:destination:)` , which returns a boolean value as result.
 The *transitive closure* is usallly used for directed graphs, although this utility can be built with both
@@ -324,8 +352,67 @@ directed or undirected graphs.
 * When the queried graph is undirected, then internally the utility will just adopt the connection components of the graph to determine vertices reachability: that is in an undirected graph all vertices in the same connected component are connected to each other. Such connected components for the queried graph are built the first time a query is made, and are valid for every vertex in the graph used as source parameter.
 * For queried directed graphs , the utility builds the reachability map from the given `source` vertex and check if it contains the given `destination` vertex. Such map for the given `source` vertex gets memoized after being built the first time, thus when querying again the same `source` vertex for reachability towards another `destination` vertex, it gets most likely reused avoiding the process of rebuilding it. Note that these reachability maps for every `source` vertex are individually and lazily built the first time such vertex is queried.
 
+
 ### `GraphMSF`
+Create this utility by using its initializer `init(graph:adopting:)`, which takes as its arguments the weighted graph to query of type `G` and an `GraphMSF<G>.Algorithm` value representing the algorithm to use for building the *minimum spanning forest* for such weighted graph.
+
+The utility instance can then be queried via its lazy properties `msf` and `weights`:
+* `msf` lazy property returns an array of arrays of edges in the queried graph. Each element of such array corresponds to a *minimum spanning tree* of a connected component in the graph; 
+* `weights` lazy property returns an array which contains the corresponding optional weight for each of those *minimum spanning trees* (such weight would be `nil` for empty *minimum spanning trees* ).
+
+Note that if the queried graph is a *directed weighted graph*, then both `msf` and `weights` properties are gonna be empty arrays; that is the *minimum spanning forest* can be obtained only for *undirected weighted graphs* via this utility.
+
+`msf` and `weights` arrays have the same lenght, and their indices are equivalent to a connected component id of the queried graph: that is given: 
+* `graph` is a weighted graph of type `G`, which contains `n` connected components; 
+* `graphMSF` is a `GraphMSF<G>` instance querying `graph`;
+* `graphCC` is a `GraphStronglyConnectedComponents<G>` instance querying `graph`
+than both `msf` and `weights` indices of `graphMSF` will be in the range `0..<n`, where `n` corresponds `graphCC.count` value, and each component `id` of `graphCC` corresponds to the index of the *mst* and its optional for the component in `graphMSF.mst` and `graphMSF.weights`.
+
+This utility lazily builds its results the first time either `msf` or `weights` lazy properties are queried.
+
+#### `GraphMSF.Algorithm`
+This *minimum spanning forest* utility gives te opportunity to build its results via different kind of algorithms that can be chosen from at initialization time.
+For this purpose the nested type `Algorithm` enum provides cases matching such algorithm choices:
+* `.primLazyAlgorithm`: use this value when you want the Prim's algorithm lazy version to be adopted for building the *minimum spanning forest*. The complexity of this algorithm is estimated to be O(*E* log *V*) where *E* is the count of edges and *V* is the count of vertices of the queried graph for each connected component in the graph.
+
+* `.primEagerAlgorithm`: use this value when you want Prim's algorithm eager version to be adopted for building the *minimum spanning forest*. The complexity of this algorithm is estimated to be O(*E* log *E*) where *E* is the count of edges of the queried graph for each connected component in the graph.
+
+* `.kruskalAlgorithm`: use this value when you want Kruskal's algorithm to be adopted for building the *minimum spanning forest*. The complexity of this algorithm is estimated to be O(*E* log *E*) where *E* is the count of edges of the queried graph for each connected component in the graph.
+
 
 ### Shortest paths utilities
+In order to query a weighted graph for shortest path between two of its vertices, this package offers three different utilities, each one adopting a different algorithm for computing such task.
+All of them build *source sinked* shortests paths, that is they build shortests paths starting from a  *source* vertex  given at initialization time, towards all other vertices reachable form it in the queried graph.
+
+#### `GraphDijkstraSP`
+This utility adopts the Dijkstra algorithm to build shortest paths in the queried graph from a given source vertex.
+Create a new instance of this utility by using its initializer `init(graph:source:)`, specifying as its `graph` parameter the weighted graph to query and as its `source` parameter a vertex included in such graph.
+Such new instance will then accept the following queries:
+* `weight(to:)` which takes as its parameter a vertex in the queried graph and returns an optional weight value, representing the cost of reaching the specified destination vertex from the `source` vertex if a shortest path exists between the two in the queried graph; the returned value will be `nil` in case a shortest path doesn't exists between the two vertices (they are disconnected). **This function throws an error in case an edge with a negative weight was found while attempting to build the shortest paths for the queried graph**.
+* `hasPath(to:)` which takes as its parameter a vertex in the queried graph and returns a boolean value: `true` in case there is a shortest path in the queried graph between the `source` vertex and the specified destination vertex. **This function throws an error in case an edge with a negative weight was found while attempting to build the shortest paths for the queried graph**.
+* `path(to:)` also takes as its parameter a vertex in the queried graph and returns a sequence of edges from the queried graph representing the shortest path from the `source` vertex to the specified destination vertex. Such sequence result will be empty in case there is no shortest path between the vertices in the queried graph. **This function throws an error in case an edge with a negative weight was found while attempting to build the shortest paths for the queried graph**.
+
+This utility builds lazily the shortest paths, thus the first time one from the available queries is done, it will compute its result with a O(*E* log*V*) complexity, where *E* is the count of edges and *V* is the count of vertices in the queried graph. Subsequent queries will take O(1) complexity.
+
+#### `GraphSP`
+This utility adopts the Bellman-Ford algorithm to build shortest paths in the queried graph from a given source vertex.
+Create a new instance of this utility by using its initializer `init(graph:source:)`, specifying as its `graph` parameter the weighted graph to query and as its `source` parameter a vertex included in such graph.
+Such new instance will then accept the following queries:
+* `weight(to:)` which takes as its parameter a vertex in the queried graph and returns an optional weight value, representing the cost of reaching the specified destination vertex from the `source` vertex if a shortest path exists between the two in the queried graph; the returned value will be `nil` in case a shortest path doesn't exists between the two vertices (they are disconnected or a negative cycle was found in the queried graph). 
+* `hasPath(to:)` which takes as its parameter a vertex in the queried graph and returns a boolean value: `true` in case there is a shortest path in the queried graph between the `source` vertex and the specified destination vertex. 
+* `path(to:)` also takes as its parameter a vertex in the queried graph and returns a sequence of edges from the queried graph representing the shortest path from the `source` vertex to the specified destination vertex. Such sequence result will be empty in case there is no shortest path between the vertices in the queried graph. 
+* `negativeCycle` a lazy property that is an array containing vertices connected between each other in the queried graph and forming a negative cycle. **That is this utility is able to compute shortest paths when it founds edges with negative weight values in the queried graph, it won't be able to proceed in case those edges with negative weight values form a negative cycle**.
+
+This utility builds lazily the shortest paths, thus the first time one from the available queries is done, it will compute its result with a O(*E* *V*) complexity, where *E* is the count of edges and *V* is the count of vertices in the queried graph. Subsequent queries will take O(1) complexity.
+
+#### `GraphAcyclicSP`
+This utility adopts the topological sort of an edge weighted directed acyclic graph to build shortest paths from a given source vertex.
+You can optionally obtain a new instance of this utility from an instance of `GraphCycle` utility by using its instance method `shortestsPaths(from:)`, which takes as its parameter a vertex included in the queried graph to be used as `source` for the shortest paths. If the `GraphCycle` utility instance has as queried weighted graph that is also **directed and acyclic**, then such method will return a new instance of `GraphCycleSP` for querying such graph for shortest paths from the specified `source` vertex. Otherwise it will return `nil`.
+Such new instance will then accept the following queries:
+* `weight(to:)` which takes as its parameter a vertex in the queried graph and returns an optional weight value, representing the cost of reaching the specified destination vertex from the `source` vertex if a shortest path exists between the two in the queried graph; the returned value will be `nil` in case a shortest path doesn't exists between the two vertices (they are disconnected). 
+* `hasPath(to:)` which takes as its parameter a vertex in the queried graph and returns a boolean value: `true` in case there is a shortest path in the queried graph between the `source` vertex and the specified destination vertex. 
+* `path(to:)` also takes as its parameter a vertex in the queried graph and returns a sequence of edges from the queried graph representing the shortest path from the `source` vertex to the specified destination vertex. Such sequence result will be empty in case there is no shortest path between the vertices in the queried graph. 
+
+This utility builds lazily the shortest paths, thus the first time one from the available queries is done, it will compute its result with a O(*E* + *V*) complexity, where *E* is the count of edges and *V* is the count of vertices in the queried graph. Subsequent queries will take O(1) complexity.
 
 ### FlowNetwork

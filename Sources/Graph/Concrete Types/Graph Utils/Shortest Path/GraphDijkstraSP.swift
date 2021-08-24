@@ -95,7 +95,7 @@ public final class GraphDijkstraSP<G: Graph> where G.Edge: WeightedGraphEdge {
 
 extension GraphDijkstraSP {
     /// Returns the total weight to reach given destination vartex in queried graph from source vertex,
-    /// `nil` when such vertex is not reachable from source vertex of a shortest path couldn't be calculated.
+    /// `nil` when such vertex is not reachable from source vertex and a shortest path couldn't be calculated.
     ///
     /// - Parameter vertex: The destination vertex. **Must be included in queried graph**.
     /// - Throws:   Throws a `.negativeWeightedEdge` error in case the queried graph contains a weighted edge
