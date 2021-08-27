@@ -415,4 +415,6 @@ Such new instance will then accept the following queries:
 
 This utility builds lazily the shortest paths, thus the first time one from the available queries is done, it will compute its result with a O(*E* + *V*) complexity, where *E* is the count of edges and *V* is the count of vertices in the queried graph. Subsequent queries will take O(1) complexity.
 
+
+
 ### FlowNetwork
