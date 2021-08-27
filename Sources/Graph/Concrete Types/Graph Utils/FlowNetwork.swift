@@ -207,7 +207,7 @@ extension FlowNetwork {
         ///
         /// - Parameter vertex: A vertex; **must be one of the two vertices connected by this flow edge.**
         /// - Returns:  A *weight* value representing the *residual capacity* of this flow edge when the connection
-        ///             shall be intended as going from the given vertex to the other vertex of the edge.
+        ///             shall be intended as going from the opposite vertex to the given vertex in the edge.
         /// - Warning: A runtime error occurs in case the specified vertex is not one contained in this flow edge.
         public func residualCapacity(to vertex: Int) -> G.Edge.Weight {
             switch vertex {

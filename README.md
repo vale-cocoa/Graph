@@ -427,6 +427,7 @@ Note that initializing a new *flow network* instance has a complexity of O(*V* +
 That is cause each adjacency in the given graph has to be mapped to a *flow edge* instance in the resulting *flow network*.
 It will also take additional memory in the order of O(*E*) —where *E* is the count of edges in the given weighted graph— that is cause a new adjacency list to store the *flow edges* is needed. 
 When given a weighted graph of kind `.undirected` it will be treated as an edge weighted directed graph: that is each one of its *undirected* edges is considered as if it were 2 *directed* edges.
+**The initializer will throw an error in case an edge with a negative weight value were found in the given weighted graph**. That is a *flow-network* cannot contain *flow edges* with negative *capacity*.
 
 The resulting `FlowNetwork` instance can then be queried with the following requests:
 * `maxFlow`: lazy instance variable that is an optional weight value representing the *max-flow* in the queried *flow network* between vertices `s` and `t`. This value is `nil` when `s` and `t` are the same vertex in the *flow network*. It is `.zero` when `s` and `t` aren't connected in the *flow network*.
@@ -441,5 +442,17 @@ A `FlowNetwork` instance also provides these other public read-only properties:
 * `vertexCount`: the number of vertices in the *flow network*;
 * `flowEdgeCount`: the number of *flow edges* in the *flow network*.
 
-This utility adopts the *Ford-Fulkerman* algorithm for building the *max-flow* and *min-cut* results. Such algorithm's compexity is estimated to be at worst O(*E^2* *U*), where *E* is the count of edges and *U* is the count of augmented paths in the flow network. 
+This utility adopts the *Ford-Fulkerman's* algorithm for building the *max-flow* and *min-cut* results. Such algorithm's compexity is estimated to be at worst O(*E^2* *U*), where *E* is the count of edges and *U* is the count of *augmented paths* in the flow network. 
 
+
+#### `FlowEdge`
+This reference nested type is used to represent a *flow edge* in a *flow network*: that is a connection between two vertices which has a weight value expressing the *capacity* of such connection, and another weight value expressing the *flow* of such connection set in the *flow network*.
+You cannot create instances of this type, since they'll be derived from a weighted edge of a graph adopted to build a *flow network*. Moreover you cannot mutate its properties.
+
+A `FlowEdge` instance vends the following getters:
+* `flow`: a weight value which represents the *flow* value between the two vertices it conencts in the *flow network*.
+* `from`: the vertex from which the connection starts.
+`to`: the vertex to which the connection ends.
+`capacity`: a weight value, representing the maximum *flow* this connection can sustain in the *flow network*.
+`other(_:)` : given one of the two vertices of this connection, returns the other one. Warning: **A runtime error will occur if the given vertex is not one of the two vertices in the flow edge.**
+`residualCapacity(to:)`: given one of the two vertices of this connection, returns the amount of weight residual that can be added to the flow to the given vertex. Warning: **A runtime error will occur if the given vertex is not one of the two vertices in the flow edge.**
