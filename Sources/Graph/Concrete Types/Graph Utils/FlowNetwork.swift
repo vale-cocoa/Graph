@@ -61,7 +61,7 @@ public final class FlowNetwork<G: Graph> where G.Edge: WeightedGraphEdge {
     /// Returns `nil` value when `s` and `t` are the same vertex; returns `.zero` when
     /// `s` and `t` are not connected.
     ///
-    /// - Complexity:   O(*E^2* *U*) the first time this value is queried —where *E* is the count of edges and
+    /// - Complexity:   O(*E^2* *U*) the first time this utility is queried —where *E* is the count of edges and
     ///                 *U* is the count of augmented paths in the flow network instance.
     ///                 Then O(1).
     public fileprivate(set) lazy var maxFlow: G.Edge.Weight? = {
@@ -75,16 +75,11 @@ public final class FlowNetwork<G: Graph> where G.Edge: WeightedGraphEdge {
     
     /// Returns an array containing the flow edges representing the min-cut of this flow network instance.
     ///
-    /// - Complexity:   O(*E^2* *U*) the first time this value is queried —where *E* is the count of edges and
+    /// - Complexity:   O(*E^2* *U*) the first time this utility is queried —where *E* is the count of edges and
     ///                 *U* is the count of augmented paths in the flow network instance.
-    ///                 Then O(1).
+    ///                 Then amortized O(1) for subsequent queries.
     public fileprivate(set) lazy var minCut: [FlowEdge] = {
-        guard
-            flowEdgeCount > 0,
-            s != t
-        else { return [] }
-        
-        return _visited
+        _visited
             .flatMap({ vertex in
                 _flowedAdjacencies
                     .withUnsafeBufferPointer({ buffer in
@@ -150,7 +145,7 @@ public final class FlowNetwork<G: Graph> where G.Edge: WeightedGraphEdge {
                     buffer[vertex].append(flowEdge)
                     buffer[other].append(flowEdge)
                 })
-                feCount += 2
+                feCount += 1
             })
         })
         self._flowedAdjacencies = adjs
@@ -247,16 +242,16 @@ extension FlowNetwork {
     /// - Complexity: O(1)
     public var vertexCount: Int { graph.vertexCount }
     
-    /// Returns a boolean value, `true` when the given vertex is in the min-cut of the flow network instance;
+    /// Returns a boolean value, `true` when the given vertex is in the cut of the flow network instance;
     /// otherwise `false`.
     ///
     /// - Parameter vertex: A vertex; **must be in this flow network instance**.
-    /// - Returns:  A boolean value, `true` when the given vertex is in the min-cut of the flow network instance;
+    /// - Returns:  A boolean value, `true` when the given vertex is in the cut of the flow network instance;
     ///             otherwise `false`.
-    /// - Complexity:   O(*E^2* *U*) the first time this value is queried —where *E* is the count of edges and
+    /// - Complexity:   O(*E^2* *U*) the first time this utility is queried —where *E* is the count of edges and
     ///                 *U* is the count of augmented paths in the flow network instance.
     ///                 Then O(1).
-    public func inMinCut(_ vertex: Int) -> Bool {
+    public func inCut(_ vertex: Int) -> Bool {
         precondition(0..<graph.vertexCount ~= vertex, "vertex must be in graph.")
         
         return _visited.contains(vertex)
@@ -268,7 +263,7 @@ extension FlowNetwork {
     /// - Parameter vertex: A vertex; **must be in this flow networkinstance**.
     /// - Returns:  An array of `FlowEdge` representing the *flowed adjacencies* of the specified `vertex`
     ///             in this flow network instance.
-    /// - Complexity:   O(*E^2* *U*) the first time this value is queried —where *E* is the count of edges and
+    /// - Complexity:   O(*E^2* *U*) the first time this utility is queried —where *E* is the count of edges and
     ///                 *U* is the count of augmented paths in the flow network instance.
     ///                 Then O(1).
     /// - Note: `FlowEdge` instances eventually contained in the returned array have their `flow` value

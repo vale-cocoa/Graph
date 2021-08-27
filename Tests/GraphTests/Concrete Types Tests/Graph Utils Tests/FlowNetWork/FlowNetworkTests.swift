@@ -188,8 +188,8 @@ final class FlowNetworkTests: XCTestCase {
         XCTAssertEqual(sut.s, s)
         XCTAssertEqual(sut.t, t)
         XCTAssertEqual(sut.vertexCount, graph.vertexCount)
-        let expectedFlowEdgesCount = graph.kind == .undirected ? graph.edgeCount * 4 : graph.edgeCount * 2
-        XCTAssertGreaterThanOrEqual(sut.flowEdgeCount, expectedFlowEdgesCount)
+        let expectedFlowEdgesCount = graph.kind == .undirected ? graph.edgeCount * 2 : graph.edgeCount
+        XCTAssertEqual(sut.flowEdgeCount, expectedFlowEdgesCount)
     }
     
     func testInit_whenGraphHasEdgesAndSomeEdgeHasNegativeWeightValue_thenThrows() {
@@ -261,13 +261,20 @@ final class FlowNetworkTests: XCTestCase {
         XCTAssertEqual(result, expectedResult)
     }
     
+    func testMinCutFlowIsZeroWhenMaxFlowIsZero() throws {
+        try whenSAndTAreDifferentAndNotConnected()
+        try XCTSkipIf(sut.maxFlow != .zero, "maxFlow must be .zero to test this")
+        let result = sut.minCut.reduce(.zero, { $0 + $1.flow })
+        XCTAssertEqual(result, .zero)
+    }
+    
     func test_withBadCaseScenario() {
         whenBadCaseScenario()
         XCTAssertEqual(sut.maxFlow, 200.0)
-        XCTAssertTrue(sut.inMinCut(0))
+        XCTAssertTrue(sut.inCut(0))
         
         for vertex in 1..<4 {
-            XCTAssertFalse(sut.inMinCut(vertex))
+            XCTAssertFalse(sut.inCut(vertex))
         }
         let flowEdgesIncidentToT = sut.flowedAdjacencies(for: sut.t).filter({ $0.to == sut.t })
         let result: Double = flowEdgesIncidentToT.reduce(.zero, { $0 + $1.flow })
@@ -280,9 +287,9 @@ final class FlowNetworkTests: XCTestCase {
         let expectedVerticesInMinCut: Set<Int> = [0, 2, 3, 6]
         for vertex in 0..<sut.graph.vertexCount {
             if expectedVerticesInMinCut.contains(vertex) {
-                XCTAssertTrue(sut.inMinCut(vertex))
+                XCTAssertTrue(sut.inCut(vertex))
             } else {
-                XCTAssertFalse(sut.inMinCut(vertex))
+                XCTAssertFalse(sut.inCut(vertex))
             }
         }
         let flowEdgesIncidentToT = sut.flowedAdjacencies(for: sut.t).filter({ $0.to == sut.t })

@@ -418,3 +418,28 @@ This utility builds lazily the shortest paths, thus the first time one from the 
 
 
 ### FlowNetwork
+This utility builds a *flow network* starting from a given weighted graph and two of its vertices *s* (source) and *t* (target a.k.a. sink). It then can be queried for the *max-flow* and *min-cut* of such *flow network*.
+You obtain a new instance of this utility by using the initializer `init(graph:s:t)` which takes as its parameters: 
+* `graph`: a weighted graph to adopt as *flow network* base, where each of its edges' weight will represent the *capacity* of a *flow edge* in the resulting *flow network*;
+* `s`: a vertex in the given weighted graph, representing the *source* of the resulting *flow-network*
+* `t`: a vertex in the given weighted graph, representing the *target (a.k.a. sink)* of the resulting *flow-network*
+Note that initializing a new *flow network* instance has a complexity of O(*V* + *E*), where *V* is the count of vertices and *E* is the count of edges in the given weighted graph.
+That is cause each adjacency in the given graph has to be mapped to a *flow edge* instance in the resulting *flow network*.
+It will also take additional memory in the order of O(*E*) —where *E* is the count of edges in the given weighted graph— that is cause a new adjacency list to store the *flow edges* is needed. 
+When given a weighted graph of kind `.undirected` it will be treated as an edge weighted directed graph: that is each one of its *undirected* edges is considered as if it were 2 *directed* edges.
+
+The resulting `FlowNetwork` instance can then be queried with the following requests:
+* `maxFlow`: lazy instance variable that is an optional weight value representing the *max-flow* in the queried *flow network* between vertices `s` and `t`. This value is `nil` when `s` and `t` are the same vertex in the *flow network*. It is `.zero` when `s` and `t` aren't connected in the *flow network*.
+* `inCut(_:)`: an instance method which takes a vertex in the *flow network* as its parameter and returns a boolean value, true when such vertex is in the cut built while calculating its *max-flow* and *min-cut*.
+* `min-cut`: lazy instance variable that is an array of `FlowEdge` instances representing the *min-cut* in the *flow network* between `s`and `t`.
+* `flowAdjaciencies(for:)`: an instance method which takes as its parameter a vertex in the *flow network* and returns an array of `FlowEdge` representing the adjacencies to such vertex. Note that such array will also contain the inverse connection to another vertex in the *flow network*. That is calculating *max-flow* and *min-cut* for a *flow-network* requires expressing original directed conenctions in the queried graph as undirected connections.
+
+A `FlowNetwork` instance also provides these other public read-only properties:
+* `graph`: the given weighted graph used to build the *flow network* instance;
+* `s`: the vertex used as *source* in the *flow network*;
+* `t`: the vertex used as *target (a.k.a. sink)* in the *flow network*;
+* `vertexCount`: the number of vertices in the *flow network*;
+* `flowEdgeCount`: the number of *flow edges* in the *flow network*.
+
+This utility adopts the *Ford-Fulkerman* algorithm for building the *max-flow* and *min-cut* results. Such algorithm's compexity is estimated to be at worst O(*E^2* *U*), where *E* is the count of edges and *U* is the count of augmented paths in the flow network. 
+
