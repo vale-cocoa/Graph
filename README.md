@@ -306,6 +306,15 @@ Available graph queries:
 Queries in this utility are independent to each other in regards of building the data for its results.
 
 
+### `GraphHamiltonianPath`
+Query a graph for its *Hamiltonian paths*. An *Hamiltonian path* is a sequence of edges in a graph that visits each graph vertex exactly once.
+Create a new `GraphHamiltonianPath` instance by using the initializer `init(graph:)`. This initializer takes the graph instance to query.
+Then query the utility by accessing its instance lazy property `hamiltonianPaths`, which is an array where each element is an Hamiltonian path in the graph represented as an array of edges.
+In case the queried graph doesn't contain any Hamiltonian path, then the `hamiltonianPaths` property will be an empty array.
+ 
+This utility lazily builds its result the first time `hamiltonianPaths` property is queried. 
+
+
 ### `GraphPaths`
 Query a graph and a source vertex in it for paths to destination vertices in such graph, adopting a specified graph traversal methodology.
 Create a new `GraphPaths` instance by using the initializer `init(graph:source:buildPathsAdopting)`. This initializer takes a graph instance to query, a source vertex of such graph and a `GraphTrabversal` value that would be the chosen strategy to traverse the queried graph from the given source vertex to find a path to a destination vertex.

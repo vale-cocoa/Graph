@@ -303,7 +303,7 @@ extension FlowNetwork {
         
         var visited: Set<Int> = []
         var flowEdgeTo = Array<FlowEdge?>(repeating: nil, count: graph.vertexCount)
-        let hasAugmentingPath: () -> Bool = { [self] in
+        let hasAugmentingPath: () -> Bool = { [unowned self] in
             visited.removeAll(keepingCapacity: true)
             flowEdgeTo = Array<FlowEdge?>(repeating: nil, count: graph.vertexCount)
             var queue = Deque<Int>()
