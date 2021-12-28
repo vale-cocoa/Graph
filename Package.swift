@@ -15,8 +15,8 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
         .package(url: "https://github.com/vale-cocoa/Deque", from: "2.0.2"),
-        .package(url: "https://github.com/vale-cocoa/PriorityQueue", from: "2.0.1"),
-        .package(url: "https://github.com/vale-cocoa/IndexedPriorityQueue", from: "0.1.4"),
+        .package(url: "https://github.com/vale-cocoa/PriorityQueue", from: "2.1.0"),
+        .package(url: "https://github.com/vale-cocoa/IndexedPriorityQueue", from: "0.2.1"),
         .package(url: "https://github.com/vale-cocoa/UnionFind.git", from: "1.0.0")
     ],
     targets: [
